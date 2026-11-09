@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Consulta REDA - Governo do Estado da Bahia</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SheetJS -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen font-sans flex flex-col justify-between">
+
+  <div>
+    <!-- Faixa Oficial do Governo -->
+    <div class="bg-blue-950 text-white text-xs py-1 px-4 border-b border-blue-900 flex justify-between items-center">
+      <span class="font-semibold tracking-wide flex items-center gap-1.5">
+        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-yellow-400"></i>
+        GOVERNO DO ESTADO DA BAHIA | Secretaria da Educação - SEC
+      </span>
+      <span class="text-slate-300 hidden sm:inline">Sistema de Gestão e Monitoramento REDA</span>
+    </div>
+
+    <!-- Header Principal -->
+    <header class="bg-blue-900 text-white shadow-lg border-b-4 border-red-600">
+      <div class="max-w-7xl mx-auto px-4 py-5 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-blue-800 rounded-lg border border-blue-700 shadow-inner">
+            <i data-lucide="building-2" class="w-8 h-8 text-yellow-400"></i>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold tracking-tight">Painel do Quantitativo REDA</h1>
+            <p class="text-blue-200 text-sm">Secretaria da Educação do Estado da Bahia</p>
+          </div>
+        </div>
+
+        <!-- Atualizador Semanal -->
+        <div class="bg-blue-800/90 p-2.5 rounded-lg border border-blue-700 flex items-center gap-3 shadow-md">
+          <label for="excelFile" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-medium text-sm cursor-pointer transition-colors flex items-center gap-2 shadow-sm">
+            <i data-lucide="upload" class="w-4 h-4"></i>
+            Atualizar Dados (.xlsx)
+          </label>
+          <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden">
+          <span id="fileName" class="text-xs text-blue-200 italic max-w-[180px] truncate">Selecione a planilha semanal</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+
+      <!-- KPI Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm border-l-4 border-l-blue-900 flex items-center gap-4">
+          <div class="p-3 bg-blue-50 text-blue-900 rounded-md"><i data-lucide="users" class="w-6 h-6"></i></div>
+          <div>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total de Servidores</p>
+            <h3 id="kpiTotal" class="text-2xl font-black text-blue-950">0</h3>
+          </div>
+        </div>
+        <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm border-l-4 border-l-emerald-600 flex items-center gap-4">
+          <div class="p-3 bg-emerald-50 text-emerald-700 rounded-md"><i data-lucide="user-check" class="w-6 h-6"></i></div>
+          <div>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Em Folha</p>
+            <h3 id="kpiEmFolha" class="text-2xl font-black text-emerald-700">0</h3>
+          </div>
+        </div>
+        <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm border-l-4 border-l-sky-600 flex items-center gap-4">
+          <div class="p-3 bg-sky-50 text-sky-700 rounded-md"><i data-lucide="map-pin" class="w-6 h-6"></i></div>
+          <div>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Municípios Atendidos</p>
+            <h3 id="kpiMunicipios" class="text-2xl font-black text-blue-950">0</h3>
+          </div>
+        </div>
+        <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm border-l-4 border-l-amber-500 flex items-center gap-4">
+          <div class="p-3 bg-amber-50 text-amber-600 rounded-md"><i data-lucide="landmark" class="w-6 h-6"></i></div>
+          <div>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">NTEs Abrangidos</p>
+            <h3 id="kpiNte" class="text-2xl font-black text-blue-950">0</h3>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtros Globais de Pesquisa -->
+      <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-4 border-b pb-2">
+          <h2 class="text-sm font-bold text-blue-950 uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="filter" class="w-4 h-4 text-red-600"></i> Filtros do Sistema
+          </h2>
+          <button id="btnClearFilters" class="text-xs text-blue-800 hover:text-red-600 font-semibold transition-colors flex items-center gap-1">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Limpar Filtros
+          </button>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">NTE (Sede)</label>
+            <select id="filterNTE" class="w-full text-xs border-slate-300 rounded-md p-2 border focus:ring-2 focus:ring-blue-900 outline-none">
+              <option value="">Todos os NTEs</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Município</label>
+            <select id="filterMunicipio" class="w-full text-xs border-slate-300 rounded-md p-2 border focus:ring-2 focus:ring-blue-900 outline-none">
+              <option value="">Todos os Municípios</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Unidade Escolar (Col. E, F, G)</label>
+            <select id="filterUnidade" class="w-full text-xs border-slate-300 rounded-md p-2 border focus:ring-2 focus:ring-blue-900 outline-none">
+              <option value="">Todas as Unidades</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Cargo / Função</label>
+            <select id="filterCargo" class="w-full text-xs border-slate-300 rounded-md p-2 border focus:ring-2 focus:ring-blue-900 outline-none">
+              <option value="">Todos os Cargos</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Modalidade (Col. AF)</label>
+            <select id="filterModalidade" class="w-full text-xs border-slate-300 rounded-md p-2 border focus:ring-2 focus:ring-blue-900 outline-none">
+              <option value="">Todas as Modalidades</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Situação da Folha (Col. N)</label>
+            <select id="filterFolha" class="w-full text-xs border-slate-300 rounded-md p-2 border focus:ring-2 focus:ring-blue-900 outline-none">
+              <option value="">Todas as Situações</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Consulta Individual de Servidor por CPF ou Matrícula -->
+      <div class="bg-slate-800 p-6 rounded-lg text-white shadow-md border-l-4 border-yellow-400">
+        <label class="block text-sm font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
+          <i data-lucide="user-search" class="w-5 h-5 text-yellow-400"></i> Consulta Individual de Servidor (CPF ou Matrícula)
+        </label>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input type="text" id="searchIndividualInput" placeholder="Digite o CPF ou a Matrícula (Nº pessoal) para ver o painel completo..." class="w-full text-sm p-3 rounded-md text-slate-800 border-2 border-slate-700 focus:border-yellow-400 outline-none shadow-inner bg-white">
+          <button id="btnSearchIndividual" class="bg-yellow-500 hover:bg-yellow-600 text-blue-950 font-bold px-6 py-3 rounded-md text-sm transition-colors flex items-center justify-center gap-2 shadow">
+            <i data-lucide="search" class="w-4 h-4"></i> Consultar
+          </button>
+        </div>
+
+        <!-- Painel de Detalhes do Servidor -->
+        <div id="individualPanel" class="hidden mt-5 bg-white text-slate-800 rounded-lg p-5 border border-slate-300 shadow-xl space-y-4">
+          <div class="flex justify-between items-center border-b pb-3">
+            <h3 id="indNomeServidor" class="text-base font-bold text-blue-950 flex items-center gap-2">
+              <i data-lucide="user-check" class="w-5 h-5 text-blue-900"></i> Nome do Servidor
+            </h3>
+            <span id="indStatusFolhaBadge" class="px-3 py-1 rounded-full text-xs font-bold">Situação Folha</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+            <div class="bg-slate-50 p-3 rounded border border-slate-200">
+              <span class="font-semibold text-slate-500 block mb-1 uppercase tracking-wider">NTE (Sede)</span>
+              <span id="indNTE" class="font-bold text-blue-950 text-sm">-</span>
+            </div>
+            <div class="bg-slate-50 p-3 rounded border border-slate-200">
+              <span class="font-semibold text-slate-500 block mb-1 uppercase tracking-wider">Município</span>
+              <span id="indMunicipio" class="font-bold text-blue-950 text-sm">-</span>
+            </div>
+            <div class="bg-slate-50 p-3 rounded border border-slate-200 lg:col-span-2">
+              <span class="font-semibold text-slate-500 block mb-1 uppercase tracking-wider">Unidade Escolar (com Códigos)</span>
+              <span id="indUnidade" class="font-bold text-blue-950 text-sm">-</span>
+            </div>
+            <div class="bg-slate-50 p-3 rounded border border-slate-200">
+              <span class="font-semibold text-slate-500 block mb-1 uppercase tracking-wider">Cargo / Função</span>
+              <span id="indCargo" class="font-bold text-blue-950 text-sm">-</span>
+            </div>
+            <div class="bg-slate-50 p-3 rounded border border-slate-200">
+              <span class="font-semibold text-slate-500 block mb-1 uppercase tracking-wider">Modalidade (Coluna AF)</span>
+              <span id="indModalidade" class="font-bold text-blue-950 text-sm">-</span>
+            </div>
+            <div class="bg-slate-50 p-3 rounded border border-slate-200">
+              <span class="font-semibold text-slate-500 block mb-1 uppercase tracking-wider">Data de Admissão (Coluna V)</span>
+              <span id="indAdmissao" class="font-bold text-emerald-700 text-sm">-</span>
+            </div>
+            <div class="bg-slate-50 p-3 rounded border border-slate-200">
+              <span class="font-semibold text-slate-500 block mb-1 uppercase tracking-wider">Fim do Contrato</span>
+              <span id="indFimContrato" class="font-bold text-red-700 text-sm">-</span>
+            </div>
+            <div class="bg-slate-50 p-3 rounded border border-slate-200">
+              <span class="font-semibold text-slate-500 block mb-1 uppercase tracking-wider">CPF</span>
+              <span id="indCPF" class="font-mono font-bold text-slate-800 text-sm">-</span>
+            </div>
+            <div class="bg-slate-50 p-3 rounded border border-slate-200">
+              <span class="font-semibold text-slate-500 block mb-1 uppercase tracking-wider">Telefone(s) (Colunas Y / Z)</span>
+              <span id="indTelefone" class="font-mono font-bold text-slate-800 text-sm">-</span>
+            </div>
+            <div class="bg-slate-50 p-3 rounded border border-slate-200">
+              <span class="font-semibold text-slate-500 block mb-1 uppercase tracking-wider">Matrícula (Nº Pessoal)</span>
+              <span id="indMatricula" class="font-mono font-bold text-slate-800 text-sm">-</span>
+            </div>
+          </div>
+        </div>
+        <p id="individualNotFound" class="hidden text-xs text-amber-300 mt-2">Nenhum servidor encontrado com este CPF ou Matrícula.</p>
+      </div>
+
+      <!-- Gráficos Visualizadores -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
+          <h3 class="text-xs font-bold text-blue-950 uppercase tracking-wider mb-4 border-b pb-2">Top 10 Quantitativo por Cargo</h3>
+          <div class="relative h-64">
+            <canvas id="chartCargos"></canvas>
+          </div>
+        </div>
+        <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm">
+          <h3 class="text-xs font-bold text-blue-950 uppercase tracking-wider mb-4 border-b pb-2">Distribuição de REDA por NTE</h3>
+          <div class="relative h-64">
+            <canvas id="chartNTE"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabela Detalhada (Inicia Oculta) -->
+      <div id="detailedSection" class="hidden bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col md:flex-row justify-between items-center gap-2">
+          <h3 class="text-xs font-bold text-blue-950 uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="table" class="w-4 h-4 text-blue-900"></i> Resultado da Consulta por Filtros
+          </h3>
+          <span id="recordCount" class="text-xs font-semibold text-slate-600 bg-slate-200 px-3 py-1 rounded-full">0 registros encontrados</span>
+        </div>
+
+        <div class="overflow-x-auto max-h-[500px]">
+          <table class="w-full text-xs text-left text-slate-700">
+            <thead class="text-xs text-white uppercase bg-blue-950 sticky top-0 border-b border-blue-900 shadow-sm">
+              <tr>
+                <th class="px-4 py-3">Matrícula</th>
+                <th class="px-4 py-3">Nome do Empregado</th>
+                <th class="px-4 py-3">Situação Folha</th>
+                <th class="px-4 py-3">Cargo / Função</th>
+                <th class="px-4 py-3">Modalidade</th>
+                <th class="px-4 py-3">Unidade Organizacional</th>
+                <th class="px-4 py-3">Município</th>
+                <th class="px-4 py-3">NTE</th>
+                <th class="px-4 py-3">Admissão</th>
+                <th class="px-4 py-3">Fim do Contrato</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody" class="divide-y divide-slate-200">
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <footer class="bg-slate-200 text-slate-600 text-xs py-4 text-center border-t border-slate-300 mt-8">
+    Governo do Estado da Bahia — Secretaria da Educação SEC
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    let rawData = [];
+    let chartCargosInstance = null;
+    let chartNTEInstance = null;
+
+    // Função auxiliar robusta para buscar valor por nomes textuais ou letras/índices de coluna exatas
+    function getRowVal(row, possibleKeys) {
+      for (let k of possibleKeys) {
+        if (row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== '') {
+          return row[k];
+        }
+      }
+      return '';
+    }
+
+    // Extrai Situação da Folha (Coluna N ou chaves equivalentes)
+    function getSituacaoFolha(row) {
+      return getRowVal(row, ['Situação Folha', 'Situação folha', 'SITUAÇÃO FOLHA', 'n', 'N', '__EMPTY_13']) || '-';
+    }
+
+    // Extrai Data de Admissão (Coluna V ou chaves equivalentes)
+    function getAdmissaoVal(row) {
+      return getRowVal(row, [
+        'ADMISSÃO', 'Admissão', 'Admissao', 'ADMISSAO', 'Data Admissão', 'Início contrato', 'Data Início', 
+        'v', 'V', '__EMPTY_21', 'u', 'U', '__EMPTY_20'
+      ]);
+    }
+
+    // Extrai Fim de Contrato
+    function getFimContratoVal(row) {
+      return getRowVal(row, ['Fim contrato', 'Fim Contrato', 'FIM CONTRATO', 'f', 'F', '__EMPTY_21']);
+    }
+
+    // Extrai Telefone (Colunas Y e Z)
+    function getTelefones(row) {
+      const telY = getRowVal(row, ['Telefone', 'Telefone 1', 'TELEFONE', 'y', 'Y', '__EMPTY_24']);
+      const telZ = getRowVal(row, ['Celular', 'Telefone 2', 'CELULAR', 'z', 'Z', '__EMPTY_25']);
+      const arrayTels = [telY, telZ].filter(Boolean);
+      return arrayTels.length > 0 ? arrayTels.join(' / ') : '-';
+    }
+
+    // Extrai Modalidade (Coluna AF)
+    function getModalidade(row) {
+      return getRowVal(row, ['Modalidade', 'MODALIDADE', 'af', 'AF', '__EMPTY_31', 'Modalidade Ensino']) || '-';
+    }
+
+    // Extrai Unidade Escolar (Colunas E, F, G)
+    function getUnidadeEscolar(row) {
+      const val = getRowVal(row, [
+        'Desc.Unid.organizacional', 'Unidade Organizacional', 'Unidade Escolar', 'ESCOLA', 
+        'e', 'E', '__EMPTY_4', 'f', 'F', '__EMPTY_5', 'g', 'G', '__EMPTY_6'
+      ]);
+      return val || '-';
+    }
+
+    // Função rigorosa de formatação para DD/MM/AAAA
+    function formatDateBR(val) {
+      if (!val) return '-';
+
+      if (val instanceof Date && !isNaN(val)) {
+        const day = String(val.getDate()).padStart(2, '0');
+        const month = String(val.getMonth() + 1).padStart(2, '0');
+        const year = val.getFullYear();
+        return `${day}/${month}/${year}`;
+      }
+
+      if (typeof val === 'number') {
+        const dateObj = XLSX.SSF.parse_date_code(val);
+        if (dateObj) {
+          const day = String(dateObj.d).padStart(2, '0');
+          const month = String(dateObj.m).padStart(2, '0');
+          return `${day}/${month}/${dateObj.y}`;
+        }
+      }
+
+      let strVal = String(val).trim();
+      if (!strVal || strVal === 'undefined' || strVal === 'null') return '-';
+
+      if (strVal.includes('T')) strVal = strVal.split('T')[0];
+
+      if (strVal.includes('-')) {
+        const parts = strVal.split('-');
+        if (parts.length === 3) {
+          if (parts[0].length === 4) return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
+        }
+      }
+
+      if (strVal.includes('/')) {
+        const parts = strVal.split('/');
+        if (parts.length === 3) {
+          let p1 = parseInt(parts[0], 10);
+          let p2 = parseInt(parts[1], 10);
+          let p3 = parts[2];
+
+          if (p1 <= 12 && p2 > 12) {
+            return `${String(p2).padStart(2, '0')}/${String(p1).padStart(2, '0')}/${p3}`;
+          }
+          return `${String(p1).padStart(2, '0')}/${String(p2).padStart(2, '0')}/${p3}`;
+        }
+      }
+
+      return strVal;
+    }
+
+    // Leitura do Excel
+    document.getElementById('excelFile').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      document.getElementById('fileName').innerText = file.name;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const data = new Uint8Array(evt.target.result);
+        const workbook = XLSX.read(data, { type: 'array', cellDates: true, dateNF: 'dd/mm/yyyy' });
+        const firstSheet = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheet];
+        
+        rawData = XLSX.utils.sheet_to_json(worksheet, { raw: false, dateNF: 'dd/mm/yyyy' });
+        
+        populateFilters();
+        applyFilters();
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    function populateFilters() {
+      const nteSelect = document.getElementById('filterNTE');
+      const munSelect = document.getElementById('filterMunicipio');
+      const unidSelect = document.getElementById('filterUnidade');
+      const cargoSelect = document.getElementById('filterCargo');
+      const modSelect = document.getElementById('filterModalidade');
+      const folhaSelect = document.getElementById('filterFolha');
+
+      const selectedNTE = nteSelect.value;
+      const selectedMun = munSelect.value;
+      const selectedUnid = unidSelect.value;
+      const selectedCargo = cargoSelect.value;
+      const selectedMod = modSelect.value;
+      const selectedFolha = folhaSelect.value;
+
+      // 1. Preenche NTE (Sede)
+      const ntes = [...new Set(rawData.map(item => item['SEDE']).filter(Boolean))].sort();
+      fillSelect('filterNTE', ntes, selectedNTE);
+
+      // 2. Filtra Municípios com base no NTE
+      let dataForMun = rawData;
+      if (selectedNTE) {
+        dataForMun = rawData.filter(item => item['SEDE'] === selectedNTE);
+      }
+      const municipios = [...new Set(dataForMun.map(item => item['Município']).filter(Boolean))].sort();
+      fillSelect('filterMunicipio', municipios, municipios.includes(selectedMun) ? selectedMun : "");
+
+      // 3. Filtra Unidades Escolares (Colunas E, F, G) com base no NTE e Município
+      let dataForUnid = dataForMun;
+      if (selectedMun) {
+        dataForUnid = dataForMun.filter(item => item['Município'] === selectedMun);
+      }
+      const unidades = [...new Set(dataForUnid.map(item => getUnidadeEscolar(item)).filter(v => v !== '-'))].sort();
+      fillSelect('filterUnidade', unidades, unidades.includes(selectedUnid) ? selectedUnid : "");
+
+      // 4. Filtra Cargos com base no NTE, Município e Unidade
+      let dataForCargo = dataForUnid;
+      if (selectedUnid) {
+        dataForCargo = dataForUnid.filter(item => getUnidadeEscolar(item) === selectedUnid);
+      }
+      const cargos = [...new Set(dataForCargo.map(item => item['Cargo']).filter(Boolean))].sort();
+      fillSelect('filterCargo', cargos, cargos.includes(selectedCargo) ? selectedCargo : "");
+
+      // 5. Modalidades (Coluna AF)
+      const modalidades = [...new Set(rawData.map(item => getModalidade(item)).filter(v => v !== '-'))].sort();
+      fillSelect('filterModalidade', modalidades, selectedMod);
+
+      // 6. Situação da Folha (Coluna N)
+      const folhas = [...new Set(rawData.map(item => getSituacaoFolha(item)).filter(v => v !== '-'))].sort();
+      fillSelect('filterFolha', folhas, selectedFolha);
+    }
+
+    function fillSelect(elementId, items, selectedValue = "") {
+      const select = document.getElementById(elementId);
+      const defaultOptionText = select.options[0].text;
+      select.innerHTML = `<option value="">${defaultOptionText}</option>`;
+      
+      items.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item;
+        option.textContent = item;
+        if (item === selectedValue) option.selected = true;
+        select.appendChild(option);
+      });
+    }
+
+    // Eventos encadeados para os filtros
+    document.getElementById('filterNTE').addEventListener('change', () => {
+      document.getElementById('filterMunicipio').value = "";
+      document.getElementById('filterUnidade').value = "";
+      document.getElementById('filterCargo').value = "";
+      populateFilters();
+      applyFilters();
+    });
+
+    document.getElementById('filterMunicipio').addEventListener('change', () => {
+      document.getElementById('filterUnidade').value = "";
+      document.getElementById('filterCargo').value = "";
+      populateFilters();
+      applyFilters();
+    });
+
+    document.getElementById('filterUnidade').addEventListener('change', () => {
+      document.getElementById('filterCargo').value = "";
+      populateFilters();
+      applyFilters();
+    });
+
+    ['filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => {
+      document.getElementById(id).addEventListener('change', applyFilters);
+    });
+
+    document.getElementById('btnClearFilters').addEventListener('click', () => {
+      document.getElementById('filterNTE').value = "";
+      document.getElementById('filterMunicipio').value = "";
+      document.getElementById('filterUnidade').value = "";
+      document.getElementById('filterCargo').value = "";
+      document.getElementById('filterModalidade').value = "";
+      document.getElementById('filterFolha').value = "";
+      populateFilters();
+      applyFilters();
+    });
+
+    // Consulta Individual por CPF ou Matrícula
+    document.getElementById('btnSearchIndividual').addEventListener('click', executeIndividualSearch);
+    document.getElementById('searchIndividualInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') executeIndividualSearch();
+    });
+
+    function executeIndividualSearch() {
+      const query = document.getElementById('searchIndividualInput').value.trim().toLowerCase();
+      const panel = document.getElementById('individualPanel');
+      const notFound = document.getElementById('individualNotFound');
+
+      if (!query) {
+        panel.classList.add('hidden');
+        notFound.classList.add('hidden');
+        return;
+      }
+
+      const found = rawData.find(item => {
+        const cpf = String(item['CPF'] || '').toLowerCase();
+        const matricula = String(item['Nº pessoal'] || '').toLowerCase();
+        return cpf.includes(query) || matricula.includes(query);
+      });
+
+      if (found) {
+        notFound.classList.add('hidden');
+        panel.classList.remove('hidden');
+
+        document.getElementById('indNomeServidor').innerHTML = `<i data-lucide="user-check" class="w-5 h-5 text-blue-900"></i> ${found['Nome do empregado'] || 'Não Informado'}`;
+        document.getElementById('indNTE').innerText = found['SEDE'] || '-';
+        document.getElementById('indMunicipio').innerText = found['Município'] || '-';
+        document.getElementById('indUnidade').innerText = getUnidadeEscolar(found);
+        document.getElementById('indCargo').innerText = found['Cargo'] || '-';
+        document.getElementById('indModalidade').innerText = getModalidade(found);
+        
+        // Exibição formatada correta (DD/MM/AAAA)
+        document.getElementById('indAdmissao').innerText = formatDateBR(getAdmissaoVal(found));
+        document.getElementById('indFimContrato').innerText = formatDateBR(getFimContratoVal(found));
+        
+        document.getElementById('indCPF').innerText = found['CPF'] || '-';
+        document.getElementById('indTelefone').innerText = getTelefones(found);
+        document.getElementById('indMatricula').innerText = found['Nº pessoal'] || '-';
+
+        // Badge Situação Folha
+        const sitFolha = getSituacaoFolha(found);
+        const badge = document.getElementById('indStatusFolhaBadge');
+        badge.innerText = sitFolha;
+        const sitUpper = String(sitFolha).toUpperCase();
+        if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('EM FOLHA')) {
+          badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+        } else {
+          badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300";
+        }
+
+        lucide.createIcons();
+      } else {
+        panel.classList.add('hidden');
+        notFound.classList.remove('hidden');
+      }
+    }
+
+    function applyFilters() {
+      const nteVal = document.getElementById('filterNTE').value;
+      const munVal = document.getElementById('filterMunicipio').value;
+      const unidVal = document.getElementById('filterUnidade').value;
+      const cargoVal = document.getElementById('filterCargo').value;
+      const modVal = document.getElementById('filterModalidade').value;
+      const folhaVal = document.getElementById('filterFolha').value;
+
+      const hasActiveFilter = nteVal || munVal || unidVal || cargoVal || modVal || folhaVal;
+
+      const filteredData = rawData.filter(item => {
+        const matchNTE = !nteVal || item['SEDE'] === nteVal;
+        const matchMun = !munVal || item['Município'] === munVal;
+        const matchUnid = !unidVal || getUnidadeEscolar(item) === unidVal;
+        const matchCargo = !cargoVal || item['Cargo'] === cargoVal;
+        const matchMod = !modVal || getModalidade(item) === modVal;
+        const matchFolha = !folhaVal || getSituacaoFolha(item) === folhaVal;
+
+        return matchNTE && matchMun && matchUnid && matchCargo && matchMod && matchFolha;
+      });
+
+      updateKPIs(filteredData);
+      renderCharts(filteredData);
+
+      const detailedSection = document.getElementById('detailedSection');
+      if (hasActiveFilter) {
+        detailedSection.classList.remove('hidden');
+        renderTable(filteredData);
+      } else {
+        detailedSection.classList.add('hidden');
+      }
+    }
+
+    function updateKPIs(data) {
+      document.getElementById('kpiTotal').innerText = data.length.toLocaleString('pt-BR');
+      
+      const emFolhaCount = data.filter(i => {
+        const sit = String(getSituacaoFolha(i)).toUpperCase();
+        return sit.includes('ATIVO') || sit.includes('SIM') || sit.includes('EM FOLHA');
+      }).length;
+      document.getElementById('kpiEmFolha').innerText = emFolhaCount.toLocaleString('pt-BR');
+
+      const municipios = new Set(data.map(i => i['Município']).filter(Boolean));
+      document.getElementById('kpiMunicipios').innerText = municipios.size.toLocaleString('pt-BR');
+
+      const ntes = new Set(data.map(i => i['SEDE']).filter(Boolean));
+      document.getElementById('kpiNte').innerText = ntes.size.toLocaleString('pt-BR');
+    }
+
+    function renderCharts(data) {
+      // Top Cargos
+      const cargoCounts = {};
+      data.forEach(i => {
+        const cargo = i['Cargo'] || 'Não Informado';
+        cargoCounts[cargo] = (cargoCounts[cargo] || 0) + 1;
+      });
+
+      const topCargos = Object.entries(cargoCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+      if (chartCargosInstance) chartCargosInstance.destroy();
+      chartCargosInstance = new Chart(document.getElementById('chartCargos'), {
+        type: 'bar',
+        data: {
+          labels: topCargos.map(c => c[0].length > 22 ? c[0].substring(0, 22) + '...' : c[0]),
+          datasets: [{
+            label: 'Quantidade',
+            data: topCargos.map(c => c[1]),
+            backgroundColor: '#1e3a8a'
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+
+      // Distribuição por NTE
+      const nteCounts = {};
+      data.forEach(i => {
+        const nte = i['SEDE'] || 'Não Informado';
+        nteCounts[nte] = (nteCounts[nte] || 0) + 1;
+      });
+
+      const topNTEs = Object.entries(nteCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+
+      if (chartNTEInstance) chartNTEInstance.destroy();
+      chartNTEInstance = new Chart(document.getElementById('chartNTE'), {
+        type: 'doughnut',
+        data: {
+          labels: topNTEs.map(n => n[0]),
+          datasets: [{
+            data: topNTEs.map(n => n[1]),
+            backgroundColor: ['#1e3a8a', '#dc2626', '#0284c7', '#d97706', '#059669', '#7c3aed', '#db2777', '#475569']
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+
+      document.getElementById('recordCount').innerText = `Exibindo ${Math.min(100, data.length)} de ${data.length.toLocaleString('pt-BR')} registros`;
+
+      data.slice(0, 100).forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-100 border-b transition-colors';
+
+        const situacaoFolha = getSituacaoFolha(row);
+        let badgeFolha = `<span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[10px] font-semibold border border-slate-300">${situacaoFolha}</span>`;
+        
+        const sitUpper = String(situacaoFolha).toUpperCase();
+        if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('EM FOLHA')) {
+          badgeFolha = `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded text-[10px] font-bold">${situacaoFolha}</span>`;
+        } else if (sitUpper.includes('INATIVO') || sitUpper.includes('EXCLUIDO') || sitUpper.includes('NAO')) {
+          badgeFolha = `<span class="bg-red-100 text-red-800 border border-red-300 px-2 py-0.5 rounded text-[10px] font-bold">${situacaoFolha}</span>`;
+        }
+
+        tr.innerHTML = `
+          <td class="px-4 py-2.5 font-mono text-slate-800 font-semibold">${row['Nº pessoal'] || '-'}</td>
+          <td class="px-4 py-2.5 font-bold text-blue-950">${row['Nome do empregado'] || '-'}</td>
+          <td class="px-4 py-2.5">${badgeFolha}</td>
+          <td class="px-4 py-2.5">${row['Cargo'] || '-'}</td>
+          <td class="px-4 py-2.5"><span class="bg-blue-100 text-blue-900 px-2 py-0.5 rounded text-[10px] font-semibold">${getModalidade(row)}</span></td>
+          <td class="px-4 py-2.5">${getUnidadeEscolar(row)}</td>
+          <td class="px-4 py-2.5">${row['Município'] || '-'}</td>
+          <td class="px-4 py-2.5">${row['SEDE'] || '-'}</td>
+          <td class="px-4 py-2.5 font-medium text-slate-700">${formatDateBR(getAdmissaoVal(row))}</td>
+          <td class="px-4 py-2.5 font-medium text-red-700">${formatDateBR(getFimContratoVal(row))}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      
+      lucide.createIcons();
+    }
+  </script>
+</body>
+</html>
