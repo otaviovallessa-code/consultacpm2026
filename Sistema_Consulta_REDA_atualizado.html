@@ -434,7 +434,7 @@ function getModalidade(row) {
 
 function getUnidadeEscolar(row) {
     const val = getRowVal(row, [
-        'Desc.Unid.organizacional', 'Unidade Organizacional', 'Unidade Escolar', 'ESCOLA',
+        'Desc_Unid_organizacional', 'Desc.Unid.organizacional', 'Unidade Organizacional', 'Unidade Escolar', 'ESCOLA',
         'e', 'E', '__EMPTY_4', 'f', 'F', '__EMPTY_5', 'g', 'G', '__EMPTY_6'
     ]);
     return val || '-';
@@ -485,7 +485,7 @@ function formatDateBR(val) {
     return strVal;
 }
 
-// Evento de alteração: lê a planilha e grava na nuvem do Firebase
+// Evento de alteração: lê a planilha, limpa chaves inválidas para o Firebase e grava na nuvem
 document.getElementById('excelFile').addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -507,7 +507,7 @@ document.getElementById('excelFile').addEventListener('change', async function(e
         }
 
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        const novosDados = XLSX.utils.sheet_to_json(worksheet, {
+        let novosDados = XLSX.utils.sheet_to_json(worksheet, {
             raw: false,
             dateNF: 'dd/mm/yyyy',
             defval: ''
@@ -517,6 +517,16 @@ document.getElementById('excelFile').addEventListener('change', async function(e
             throw new Error('A primeira aba da planilha está vazia.');
         }
 
+        // Sanitização das chaves para compatibilidade com o Realtime Database do Firebase
+        novosDados = novosDados.map(row => {
+            const cleanRow = {};
+            for (let key in row) {
+                const cleanKey = key.replace(/[.#$\/\[\]]/g, '_');
+                cleanRow[cleanKey] = row[key];
+            }
+            return cleanRow;
+        });
+
         const now = new Date();
         const updateInfo = {
             fileName: file.name,
@@ -525,7 +535,6 @@ document.getElementById('excelFile').addEventListener('change', async function(e
             data: novosDados
         };
 
-        // Gravação assíncrona garantida no banco Realtime Database
         await dbRef.set(updateInfo);
 
         alert(`Dados sincronizados com sucesso na nuvem!\n\nArquivo: ${file.name}\nRegistros: ${novosDados.length.toLocaleString('pt-BR')}`);
