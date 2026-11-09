@@ -383,14 +383,13 @@
 <script>
 lucide.createIcons();
 
-// ==========================================
-// CONFIGURAÇÃO DO FIREBASE (Realtime Database)
-// ==========================================
 const firebaseConfig = {
     databaseURL: "https://sistemaconsultacpm-default-rtdb.firebaseio.com"
 };
 
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const dbRef = firebase.database().ref('sistema_reda');
 
 let rawData = [];
@@ -486,14 +485,14 @@ function formatDateBR(val) {
     return strVal;
 }
 
-// Leitura do Excel e gravação direta no Firebase Realtime Database
+// Leitura do Excel e gravação com Promessa Assíncrona (.set)
 document.getElementById('excelFile').addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
     const input = this;
     const fileNameLabel = document.getElementById('fileName');
-    fileNameLabel.innerText = 'Enviando ao Firebase...';
+    fileNameLabel.innerText = 'Processando arquivo...';
 
     try {
         const buffer = await file.arrayBuffer();
@@ -526,14 +525,18 @@ document.getElementById('excelFile').addEventListener('change', async function(e
             data: novosDados
         };
 
-        // Sobrescreve os dados no Firebase (despoleta atualização em tempo real para todos os utilizadores)
+        fileNameLabel.innerText = 'Enviando para o Firebase...';
+        console.log("Iniciando envio para o Firebase...", updateInfo);
+
+        // Aguarda a gravação real ser confirmada pelo Firebase
         await dbRef.set(updateInfo);
 
-        alert(`Planilha atualizada e sincronizada no Firebase com sucesso!\n\nArquivo: ${file.name}\nRegistos: ${novosDados.length.toLocaleString('pt-BR')}`);
+        console.log("Envio para o Firebase concluído com sucesso!");
+        alert(`Planilha salva na nuvem com sucesso!\n\nArquivo: ${file.name}\nRegistros: ${novosDados.length.toLocaleString('pt-BR')}`);
     } catch (error) {
-        console.error('Erro ao enviar para o Firebase:', error);
+        console.error('Erro detalhado ao enviar para o Firebase:', error);
         fileNameLabel.innerText = 'Erro ao enviar dados';
-        alert('Não foi possível guardar no Firebase.\n\n' + (error.message || 'Verifique a sua ligação à internet.'));
+        alert('Falha ao gravar no Firebase.\n\nMotivo: ' + (error.message || 'Verifique sua conexão ou as regras de segurança no console do Firebase.'));
     } finally {
         input.value = '';
     }
@@ -545,13 +548,13 @@ function displayUpdateInfo(name, dateStr) {
     lucide.createIcons();
 }
 
-// Inicialização: Ouvinte em tempo real do Firebase (sincroniza automaticamente a página em qualquer navegador)
 window.addEventListener('DOMContentLoaded', () => {
     const fileNameLabel = document.getElementById('fileName');
     fileNameLabel.innerText = 'Conectando ao Firebase...';
 
     dbRef.on('value', (snapshot) => {
         const saved = snapshot.val();
+        console.log("Dados recebidos do Firebase:", saved ? "Dados encontrados" : "Null");
 
         if (saved && Array.isArray(saved.data)) {
             rawData = saved.data;
@@ -564,7 +567,7 @@ window.addEventListener('DOMContentLoaded', () => {
             fileNameLabel.innerText = 'Nenhuma planilha carregada';
         }
     }, (error) => {
-        console.error('Erro ao sincronizar com o Firebase:', error);
+        console.error('Erro de leitura/permissão do Firebase:', error);
         fileNameLabel.innerText = 'Erro de conexão com Firebase';
     });
 });
@@ -812,7 +815,7 @@ document.getElementById('btnExportExcel').addEventListener('click', () => {
     const filteredData = getFilteredData();
 
     if (filteredData.length === 0) {
-        alert('Nenhum registo para exportar.');
+        alert('Nenhum registro para exportar.');
         return;
     }
 
