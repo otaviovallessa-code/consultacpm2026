@@ -376,8 +376,22 @@
     </div>
 </footer>
 
+<!-- Firebase SDKs (Compat / Realtime Database) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
 <script>
 lucide.createIcons();
+
+// ==========================================
+// CONFIGURAÇÃO DO FIREBASE (Realtime Database)
+// ==========================================
+const firebaseConfig = {
+    databaseURL: "https://sistemaconsultacpm-default-rtdb.firebaseio.com"
+};
+
+firebase.initializeApp(firebaseConfig);
+const dbRef = firebase.database().ref('sistema_reda');
 
 let rawData = [];
 let chartCargosInstance = null;
@@ -472,77 +486,14 @@ function formatDateBR(val) {
     return strVal;
 }
 
-// ==========================================================
-// ARMAZENAMENTO PERMANENTE: INDEXEDDB
-// Mantém somente a última planilha importada (sobrescreve a anterior).
-// Os dados ficam salvos neste navegador e neste computador.
-// ==========================================================
-const DB_NAME = 'Sistema_REDA_SEC';
-const DB_VERSION = 1;
-const DB_STORE = 'dados';
-const DB_KEY = 'ultima_importacao';
-
-function abrirBanco() {
-    return new Promise((resolve, reject) => {
-        if (!('indexedDB' in window)) {
-            reject(new Error('Este navegador não oferece suporte ao armazenamento IndexedDB.'));
-            return;
-        }
-
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-        request.onupgradeneeded = function(event) {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains(DB_STORE)) {
-                db.createObjectStore(DB_STORE);
-            }
-        };
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error || new Error('Não foi possível abrir o banco de dados.'));
-        request.onblocked = () => reject(new Error('O banco de dados está bloqueado por outra aba. Feche outras abas deste sistema e tente novamente.'));
-    });
-}
-
-async function salvarDados(updateInfo) {
-    const db = await abrirBanco();
-
-    try {
-        await new Promise((resolve, reject) => {
-            const transaction = db.transaction([DB_STORE], 'readwrite');
-            transaction.objectStore(DB_STORE).put(updateInfo, DB_KEY);
-            transaction.oncomplete = () => resolve();
-            transaction.onerror = () => reject(transaction.error || new Error('Falha ao gravar os dados.'));
-            transaction.onabort = () => reject(transaction.error || new Error('A gravação foi cancelada.'));
-        });
-    } finally {
-        db.close();
-    }
-}
-
-async function carregarDadosSalvos() {
-    const db = await abrirBanco();
-
-    try {
-        return await new Promise((resolve, reject) => {
-            const transaction = db.transaction([DB_STORE], 'readonly');
-            const request = transaction.objectStore(DB_STORE).get(DB_KEY);
-            request.onsuccess = () => resolve(request.result || null);
-            request.onerror = () => reject(request.error || new Error('Não foi possível recuperar os dados salvos.'));
-        });
-    } finally {
-        db.close();
-    }
-}
-
-// Leitura do Excel: cada nova importação substitui a planilha anterior.
+// Leitura do Excel e gravação direta no Firebase Realtime Database
 document.getElementById('excelFile').addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
     const input = this;
     const fileNameLabel = document.getElementById('fileName');
-    fileNameLabel.innerText = 'Importando e salvando...';
+    fileNameLabel.innerText = 'Enviando ao Firebase...';
 
     try {
         const buffer = await file.arrayBuffer();
@@ -564,7 +515,7 @@ document.getElementById('excelFile').addEventListener('change', async function(e
         });
 
         if (!novosDados.length) {
-            throw new Error('A primeira aba da planilha está vazia. A atualização anterior foi mantida.');
+            throw new Error('A primeira aba da planilha está vazia.');
         }
 
         const now = new Date();
@@ -575,23 +526,14 @@ document.getElementById('excelFile').addEventListener('change', async function(e
             data: novosDados
         };
 
-        // A tela só muda depois da confirmação de gravação no IndexedDB.
-        await salvarDados(updateInfo);
+        // Sobrescreve os dados no Firebase (despoleta atualização em tempo real para todos os utilizadores)
+        await dbRef.set(updateInfo);
 
-        rawData = novosDados;
-        displayUpdateInfo(file.name, updateInfo.date);
-        populateFilters();
-        applyFilters();
-
-        alert(`Atualização salva com sucesso!\n\nArquivo: ${file.name}\nRegistros: ${rawData.length.toLocaleString('pt-BR')}\n\nA planilha anterior foi substituída.`);
+        alert(`Planilha atualizada e sincronizada no Firebase com sucesso!\n\nArquivo: ${file.name}\nRegistos: ${novosDados.length.toLocaleString('pt-BR')}`);
     } catch (error) {
-        console.error('Erro ao importar/salvar a planilha:', error);
-        fileNameLabel.innerText = rawData.length
-            ? 'Falha na atualização — dados anteriores mantidos'
-            : 'Falha ao salvar a planilha';
-        alert('Não foi possível concluir a atualização.\n\n' +
-              (error.message || 'Verifique o arquivo e tente novamente.') +
-              '\n\nOs dados da última atualização válida foram preservados.');
+        console.error('Erro ao enviar para o Firebase:', error);
+        fileNameLabel.innerText = 'Erro ao enviar dados';
+        alert('Não foi possível guardar no Firebase.\n\n' + (error.message || 'Verifique a sua ligação à internet.'));
     } finally {
         input.value = '';
     }
@@ -603,26 +545,13 @@ function displayUpdateInfo(name, dateStr) {
     lucide.createIcons();
 }
 
-// Inicialização: recupera a última planilha gravada no IndexedDB.
-window.addEventListener('DOMContentLoaded', async () => {
-    try {
-        let saved = await carregarDadosSalvos();
+// Inicialização: Ouvinte em tempo real do Firebase (sincroniza automaticamente a página em qualquer navegador)
+window.addEventListener('DOMContentLoaded', () => {
+    const fileNameLabel = document.getElementById('fileName');
+    fileNameLabel.innerText = 'Conectando ao Firebase...';
 
-        // Migração do cache antigo (localStorage), se houver dados anteriores.
-        if (!saved) {
-            const oldCache = localStorage.getItem('reda_cache');
-            if (oldCache) {
-                try {
-                    const parsed = JSON.parse(oldCache);
-                    if (parsed && Array.isArray(parsed.data) && parsed.data.length) {
-                        await salvarDados(parsed);
-                        saved = parsed;
-                    }
-                } catch (migrationError) {
-                    console.warn('Não foi possível migrar o cache antigo:', migrationError);
-                }
-            }
-        }
+    dbRef.on('value', (snapshot) => {
+        const saved = snapshot.val();
 
         if (saved && Array.isArray(saved.data)) {
             rawData = saved.data;
@@ -631,11 +560,13 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
             populateFilters();
             applyFilters();
+        } else {
+            fileNameLabel.innerText = 'Nenhuma planilha carregada';
         }
-    } catch (error) {
-        console.error('Erro ao recuperar a última atualização:', error);
-        alert('Não foi possível recuperar os dados salvos neste navegador. Se o problema persistir, importe novamente a planilha.');
-    }
+    }, (error) => {
+        console.error('Erro ao sincronizar com o Firebase:', error);
+        fileNameLabel.innerText = 'Erro de conexão com Firebase';
+    });
 });
 
 function populateFilters() {
@@ -881,7 +812,7 @@ document.getElementById('btnExportExcel').addEventListener('click', () => {
     const filteredData = getFilteredData();
 
     if (filteredData.length === 0) {
-        alert('Nenhum registro para exportar.');
+        alert('Nenhum registo para exportar.');
         return;
     }
 
@@ -925,7 +856,6 @@ function updateKPIs(data) {
 }
 
 function renderCharts(data) {
-    // 1. Gráfico de Cargos (Com tooltips melhorados e rotação limpa)
     const cargoCounts = {};
 
     data.forEach(i => {
@@ -986,7 +916,6 @@ function renderCharts(data) {
         }
     });
 
-    // 2. Gráfico por NTE (Com legenda lateral limpa e clara)
     const nteCounts = {};
 
     data.forEach(i => {
