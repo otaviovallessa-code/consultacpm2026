@@ -485,14 +485,14 @@ function formatDateBR(val) {
     return strVal;
 }
 
-// Evento de alteração: lê a planilha, sanitiza chaves para o Firebase e grava na nuvem
+// Evento de alteração otimizado: Mapeia e compacta apenas os dados essenciais para o Firebase
 document.getElementById('excelFile').addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
     const input = this;
     const fileNameLabel = document.getElementById('fileName');
-    fileNameLabel.innerText = 'Enviando para nuvem...';
+    fileNameLabel.innerText = 'Processando arquivo...';
 
     try {
         const buffer = await file.arrayBuffer();
@@ -507,24 +507,35 @@ document.getElementById('excelFile').addEventListener('change', async function(e
         }
 
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-        let novosDados = XLSX.utils.sheet_to_json(worksheet, {
+        let rawJson = XLSX.utils.sheet_to_json(worksheet, {
             raw: false,
             dateNF: 'dd/mm/yyyy',
             defval: ''
         });
 
-        if (!novosDados.length) {
+        if (!rawJson.length) {
             throw new Error('A primeira aba da planilha está vazia.');
         }
 
-        // Sanitização rigorosa das chaves para compatibilidade com o Firebase Realtime Database
-        novosDados = novosDados.map(row => {
-            const cleanRow = {};
-            for (let key in row) {
-                const cleanKey = key.replace(/[.#$\/\[\]]/g, '_');
-                cleanRow[cleanKey] = row[key];
-            }
-            return cleanRow;
+        fileNameLabel.innerText = 'Enviando para nuvem...';
+
+        // Otimização: Mapeamento direto e compactação de payload para suportar grandes volumes sem estourar limites
+        let novosDados = rawJson.map(row => {
+            return {
+                "Nº pessoal": row['Nº pessoal'] || '',
+                "Nome do empregado": row['Nome do empregado'] || '',
+                "Situação Folha": row['Situação Folha'] || row['Situação folha'] || row['SITUAÇÃO FOLHA'] || '',
+                "Cargo": row['Cargo'] || '',
+                "Modalidade": row['Modalidade'] || '',
+                "Desc_Unid_organizacional": row['Desc.Unid.organizacional'] || row['Desc_Unid_organizacional'] || row['Unidade Organizacional'] || '',
+                "Município": row['Município'] || '',
+                "SEDE": row['SEDE'] || '',
+                "ADMISSÃO": row['ADMISSÃO'] || row['Admissão'] || '',
+                "Fim contrato": row['Fim contrato'] || row['Fim Contrato'] || '',
+                "CPF": row['CPF'] || '',
+                "TELEFONE": row['TELEFONE'] || row['Telefone'] || '',
+                "CELULAR": row['CELULAR'] || row['Celular'] || ''
+            };
         });
 
         const now = new Date();
@@ -541,7 +552,7 @@ document.getElementById('excelFile').addEventListener('change', async function(e
     } catch (error) {
         console.error('Erro ao enviar para o Firebase:', error);
         fileNameLabel.innerText = 'Falha ao sincronizar nuvem';
-        alert('Falha ao gravar os dados no Realtime Database.\n\nDetalhes: ' + (error.message || 'Verifique as regras de segurança do banco.'));
+        alert('Erro ao gravar dados na nuvem.\n\nDetalhes: ' + (error.message || 'Verifique sua conexão ou regras do banco.'));
     } finally {
         input.value = '';
     }
