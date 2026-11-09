@@ -405,12 +405,32 @@ function getRowVal(row, possibleKeys) {
     return '';
 }
 
+function getMatricula(row) {
+    return row.mat || getRowVal(row, ['Nº pessoal', 'Matrícula', 'Matricula', 'N_pessoal']) || '-';
+}
+
+function getNome(row) {
+    return row.nome || getRowVal(row, ['Nome do empregado', 'Nome', 'Nome Servidor', 'NOME']) || '-';
+}
+
 function getSituacaoFolha(row) {
-    return getRowVal(row, ['Situação Folha', 'Situação folha', 'SITUAÇÃO FOLHA', 'n', 'N', '__EMPTY_13']) || '-';
+    return row.sit || getRowVal(row, ['Situação Folha', 'Situação folha', 'SITUAÇÃO FOLHA', 'n', 'N', '__EMPTY_13']) || '-';
+}
+
+function getCargo(row) {
+    return row.cargo || getRowVal(row, ['Cargo', 'Cargo / Função', 'CARGO']) || '-';
+}
+
+function getMunicipio(row) {
+    return row.mun || getRowVal(row, ['Município', 'Municipio', 'MUNICIPIO']) || '-';
+}
+
+function getSede(row) {
+    return row.sede || getRowVal(row, ['SEDE', 'NTE', 'Sede']) || '-';
 }
 
 function getAdmissaoVal(row) {
-    return getRowVal(row, [
+    return row.adm || getRowVal(row, [
         'ADMISSÃO', 'Admissão', 'Admissao', 'ADMISSAO',
         'Data Admissão', 'Início contrato', 'Data Início',
         'v', 'V', '__EMPTY_21', 'u', 'U', '__EMPTY_20'
@@ -418,26 +438,29 @@ function getAdmissaoVal(row) {
 }
 
 function getFimContratoVal(row) {
-    return getRowVal(row, ['Fim contrato', 'Fim Contrato', 'FIM CONTRATO', 'f', 'F', '__EMPTY_21']);
+    return row.fim || getRowVal(row, ['Fim contrato', 'Fim Contrato', 'FIM CONTRATO', 'f', 'F', '__EMPTY_21']);
+}
+
+function getCPF(row) {
+    return row.cpf || getRowVal(row, ['CPF', 'Cpf']) || '-';
 }
 
 function getTelefones(row) {
-    const telY = getRowVal(row, ['Telefone', 'Telefone 1', 'TELEFONE', 'y', 'Y', '__EMPTY_24']);
-    const telZ = getRowVal(row, ['Celular', 'Telefone 2', 'CELULAR', 'z', 'Z', '__EMPTY_25']);
+    const telY = row.tel || getRowVal(row, ['Telefone', 'Telefone 1', 'TELEFONE', 'y', 'Y', '__EMPTY_24']);
+    const telZ = row.cel || getRowVal(row, ['Celular', 'Telefone 2', 'CELULAR', 'z', 'Z', '__EMPTY_25']);
     const arrayTels = [telY, telZ].filter(Boolean);
     return arrayTels.length > 0 ? arrayTels.join(' / ') : '-';
 }
 
 function getModalidade(row) {
-    return getRowVal(row, ['Modalidade', 'MODALIDADE', 'af', 'AF', '__EMPTY_31', 'Modalidade Ensino']) || '-';
+    return row.mod || getRowVal(row, ['Modalidade', 'MODALIDADE', 'af', 'AF', '__EMPTY_31', 'Modalidade Ensino']) || '-';
 }
 
 function getUnidadeEscolar(row) {
-    const val = getRowVal(row, [
+    return row.unid || getRowVal(row, [
         'Desc_Unid_organizacional', 'Desc.Unid.organizacional', 'Unidade Organizacional', 'Unidade Escolar', 'ESCOLA',
         'e', 'E', '__EMPTY_4', 'f', 'F', '__EMPTY_5', 'g', 'G', '__EMPTY_6'
-    ]);
-    return val || '-';
+    ]) || '-';
 }
 
 function formatDateBR(val) {
@@ -485,7 +508,7 @@ function formatDateBR(val) {
     return strVal;
 }
 
-// Evento de alteração otimizado: Mapeia e compacta apenas os dados essenciais para o Firebase
+// Evento de alteração com minificação de chaves para otimizar o payload do Firebase
 document.getElementById('excelFile').addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -517,24 +540,24 @@ document.getElementById('excelFile').addEventListener('change', async function(e
             throw new Error('A primeira aba da planilha está vazia.');
         }
 
-        fileNameLabel.innerText = 'Enviando para nuvem...';
+        fileNameLabel.innerText = 'Compactando e enviando...';
 
-        // Otimização: Mapeamento direto e compactação de payload para suportar grandes volumes sem estourar limites
+        // Minificação de chaves: reduz drasticamente o tamanho do JSON enviado para o Firebase
         let novosDados = rawJson.map(row => {
             return {
-                "Nº pessoal": row['Nº pessoal'] || '',
-                "Nome do empregado": row['Nome do empregado'] || '',
-                "Situação Folha": row['Situação Folha'] || row['Situação folha'] || row['SITUAÇÃO FOLHA'] || '',
-                "Cargo": row['Cargo'] || '',
-                "Modalidade": row['Modalidade'] || '',
-                "Desc_Unid_organizacional": row['Desc.Unid.organizacional'] || row['Desc_Unid_organizacional'] || row['Unidade Organizacional'] || '',
-                "Município": row['Município'] || '',
-                "SEDE": row['SEDE'] || '',
-                "ADMISSÃO": row['ADMISSÃO'] || row['Admissão'] || '',
-                "Fim contrato": row['Fim contrato'] || row['Fim Contrato'] || '',
-                "CPF": row['CPF'] || '',
-                "TELEFONE": row['TELEFONE'] || row['Telefone'] || '',
-                "CELULAR": row['CELULAR'] || row['Celular'] || ''
+                "mat": String(row['Nº pessoal'] || row['Matrícula'] || ''),
+                "nome": String(row['Nome do empregado'] || row['Nome'] || ''),
+                "sit": String(row['Situação Folha'] || row['Situação folha'] || row['SITUAÇÃO FOLHA'] || ''),
+                "cargo": String(row['Cargo'] || ''),
+                "mod": String(row['Modalidade'] || row['MODALIDADE'] || ''),
+                "unid": String(row['Desc.Unid.organizacional'] || row['Desc_Unid_organizacional'] || row['Unidade Organizacional'] || ''),
+                "mun": String(row['Município'] || row['Municipio'] || ''),
+                "sede": String(row['SEDE'] || row['NTE'] || ''),
+                "adm": String(row['ADMISSÃO'] || row['Admissão'] || ''),
+                "fim": String(row['Fim contrato'] || row['Fim Contrato'] || ''),
+                "cpf": String(row['CPF'] || ''),
+                "tel": String(row['TELEFONE'] || row['Telefone'] || ''),
+                "cel": String(row['CELULAR'] || row['Celular'] || '')
             };
         });
 
@@ -564,7 +587,7 @@ function displayUpdateInfo(name, dateStr) {
     lucide.createIcons();
 }
 
-// Ouvinte em tempo real: Carrega automaticamente os dados da nuvem em qualquer máquina
+// Ouvinte em tempo real: Carrega automaticamente os dados compactados da nuvem
 window.addEventListener('DOMContentLoaded', () => {
     const fileNameLabel = document.getElementById('fileName');
     fileNameLabel.innerText = 'Conectando ao Firebase...';
@@ -603,19 +626,19 @@ function populateFilters() {
     const selectedMod = modSelect.value;
     const selectedFolha = folhaSelect.value;
 
-    const ntes = [...new Set(rawData.map(item => item['SEDE']).filter(Boolean))].sort();
+    const ntes = [...new Set(rawData.map(item => getSede(item)).filter(Boolean))].sort();
     fillSelect('filterNTE', ntes, selectedNTE);
 
     let dataForMun = rawData;
     if (selectedNTE) {
-        dataForMun = rawData.filter(item => item['SEDE'] === selectedNTE);
+        dataForMun = rawData.filter(item => getSede(item) === selectedNTE);
     }
-    const municipios = [...new Set(dataForMun.map(item => item['Município']).filter(Boolean))].sort();
+    const municipios = [...new Set(dataForMun.map(item => getMunicipio(item)).filter(Boolean))].sort();
     fillSelect('filterMunicipio', municipios, municipios.includes(selectedMun) ? selectedMun : "");
 
     let dataForUnid = dataForMun;
     if (selectedMun) {
-        dataForUnid = dataForMun.filter(item => item['Município'] === selectedMun);
+        dataForUnid = dataForMun.filter(item => getMunicipio(item) === selectedMun);
     }
     const unidades = [...new Set(dataForUnid.map(item => getUnidadeEscolar(item)).filter(v => v !== '-'))].sort();
     fillSelect('filterUnidade', unidades, unidades.includes(selectedUnid) ? selectedUnid : "");
@@ -624,12 +647,12 @@ function populateFilters() {
     if (selectedUnid) {
         dataForCargo = dataForUnid.filter(item => getUnidadeEscolar(item) === selectedUnid);
     }
-    const cargos = [...new Set(dataForCargo.map(item => item['Cargo']).filter(Boolean))].sort();
+    const cargos = [...new Set(dataForCargo.map(item => getCargo(item)).filter(Boolean))].sort();
     fillSelect('filterCargo', cargos, cargos.includes(selectedCargo) ? selectedCargo : "");
 
     let dataForMod = dataForCargo;
     if (selectedCargo) {
-        dataForMod = dataForCargo.filter(item => item['Cargo'] === selectedCargo);
+        dataForMod = dataForCargo.filter(item => getCargo(item) === selectedCargo);
     }
     const modalidades = [...new Set(dataForMod.map(item => getModalidade(item)).filter(v => v !== '-'))].sort();
     fillSelect('filterModalidade', modalidades, modalidades.includes(selectedMod) ? selectedMod : "");
@@ -734,8 +757,8 @@ function executeIndividualSearch() {
     }
 
     const found = rawData.find(item => {
-        const cpf = String(item['CPF'] || '').toLowerCase();
-        const matricula = String(item['Nº pessoal'] || '').toLowerCase();
+        const cpf = String(getCPF(item)).toLowerCase();
+        const matricula = String(getMatricula(item)).toLowerCase();
 
         return cpf.includes(query) || matricula.includes(query);
     });
@@ -745,20 +768,20 @@ function executeIndividualSearch() {
         panel.classList.remove('hidden');
 
         document.getElementById('indNomeServidor').innerHTML =
-            `<i data-lucide="user-check" class="w-5 h-5 text-blue-900"></i> ${found['Nome do empregado'] || 'Não Informado'}`;
+            `<i data-lucide="user-check" class="w-5 h-5 text-blue-900"></i> ${getNome(found)}`;
 
-        document.getElementById('indNTE').innerText = found['SEDE'] || '-';
-        document.getElementById('indMunicipio').innerText = found['Município'] || '-';
+        document.getElementById('indNTE').innerText = getSede(found);
+        document.getElementById('indMunicipio').innerText = getMunicipio(found);
         document.getElementById('indUnidade').innerText = getUnidadeEscolar(found);
-        document.getElementById('indCargo').innerText = found['Cargo'] || '-';
+        document.getElementById('indCargo').innerText = getCargo(found);
         document.getElementById('indModalidade').innerText = getModalidade(found);
 
         document.getElementById('indAdmissao').innerText = formatDateBR(getAdmissaoVal(found));
         document.getElementById('indFimContrato').innerText = formatDateBR(getFimContratoVal(found));
 
-        document.getElementById('indCPF').innerText = found['CPF'] || '-';
+        document.getElementById('indCPF').innerText = getCPF(found);
         document.getElementById('indTelefone').innerText = getTelefones(found);
-        document.getElementById('indMatricula').innerText = found['Nº pessoal'] || '-';
+        document.getElementById('indMatricula').innerText = getMatricula(found);
 
         const sitFolha = getSituacaoFolha(found);
         const badge = document.getElementById('indStatusFolhaBadge');
@@ -791,10 +814,10 @@ function getFilteredData() {
     const folhaVal = document.getElementById('filterFolha').value;
 
     return rawData.filter(item => {
-        const matchNTE = !nteVal || item['SEDE'] === nteVal;
-        const matchMun = !munVal || item['Município'] === munVal;
+        const matchNTE = !nteVal || getSede(item) === nteVal;
+        const matchMun = !munVal || getMunicipio(item) === munVal;
         const matchUnid = !unidVal || getUnidadeEscolar(item) === unidVal;
-        const matchCargo = !cargoVal || item['Cargo'] === cargoVal;
+        const matchCargo = !cargoVal || getCargo(item) === cargoVal;
         const matchMod = !modVal || getModalidade(item) === modVal;
         const matchFolha = !folhaVal || getSituacaoFolha(item) === folhaVal;
 
@@ -836,17 +859,17 @@ document.getElementById('btnExportExcel').addEventListener('click', () => {
     }
 
     const exportRows = filteredData.map(item => ({
-        'Matrícula': item['Nº pessoal'] || '-',
-        'Nome do Empregado': item['Nome do empregado'] || '-',
+        'Matrícula': getMatricula(item),
+        'Nome do Empregado': getNome(item),
         'Situação Folha': getSituacaoFolha(item),
-        'Cargo / Função': item['Cargo'] || '-',
+        'Cargo / Função': getCargo(item),
         'Modalidade': getModalidade(item),
         'Unidade Organizacional': getUnidadeEscolar(item),
-        'Município': item['Município'] || '-',
-        'NTE': item['SEDE'] || '-',
+        'Município': getMunicipio(item),
+        'NTE': getSede(item),
         'Admissão': formatDateBR(getAdmissaoVal(item)),
         'Fim do Contrato': formatDateBR(getFimContratoVal(item)),
-        'CPF': item['CPF'] || '-',
+        'CPF': getCPF(item),
         'Telefone': getTelefones(item)
     }));
 
@@ -867,10 +890,10 @@ function updateKPIs(data) {
 
     document.getElementById('kpiEmFolha').innerText = emFolhaCount.toLocaleString('pt-BR');
 
-    const municipios = new Set(data.map(i => i['Município']).filter(Boolean));
+    const municipios = new Set(data.map(i => getMunicipio(i)).filter(Boolean));
     document.getElementById('kpiMunicipios').innerText = municipios.size.toLocaleString('pt-BR');
 
-    const ntes = new Set(data.map(i => i['SEDE']).filter(Boolean));
+    const ntes = new Set(data.map(i => getSede(i)).filter(Boolean));
     document.getElementById('kpiNte').innerText = ntes.size.toLocaleString('pt-BR');
 }
 
@@ -878,7 +901,7 @@ function renderCharts(data) {
     const cargoCounts = {};
 
     data.forEach(i => {
-        const cargo = i['Cargo'] || 'Não Informado';
+        const cargo = getCargo(i) || 'Não Informado';
         cargoCounts[cargo] = (cargoCounts[cargo] || 0) + 1;
     });
 
@@ -938,7 +961,7 @@ function renderCharts(data) {
     const nteCounts = {};
 
     data.forEach(i => {
-        const nte = i['SEDE'] || 'Não Informado';
+        const nte = getSede(i) || 'Não Informado';
         nteCounts[nte] = (nteCounts[nte] || 0) + 1;
     });
 
@@ -1011,14 +1034,14 @@ function renderTable(data) {
         }
 
         tr.innerHTML = `
-            <td class="px-4 py-3 font-mono text-slate-800 font-bold">${row['Nº pessoal'] || '-'}</td>
-            <td class="px-4 py-3 font-bold text-blue-950">${row['Nome do empregado'] || '-'}</td>
+            <td class="px-4 py-3 font-mono text-slate-800 font-bold">${getMatricula(row)}</td>
+            <td class="px-4 py-3 font-bold text-blue-950">${getNome(row)}</td>
             <td class="px-4 py-3">${badgeFolha}</td>
-            <td class="px-4 py-3">${row['Cargo'] || '-'}</td>
+            <td class="px-4 py-3">${getCargo(row)}</td>
             <td class="px-4 py-3"><span class="bg-blue-50 text-blue-900 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-semibold">${getModalidade(row)}</span></td>
             <td class="px-4 py-3">${getUnidadeEscolar(row)}</td>
-            <td class="px-4 py-3">${row['Município'] || '-'}</td>
-            <td class="px-4 py-3 font-semibold text-slate-800">${row['SEDE'] || '-'}</td>
+            <td class="px-4 py-3">${getMunicipio(row)}</td>
+            <td class="px-4 py-3 font-semibold text-slate-800">${getSede(row)}</td>
             <td class="px-4 py-3 font-medium text-slate-700">${formatDateBR(getAdmissaoVal(row))}</td>
             <td class="px-4 py-3 font-medium text-red-700">${formatDateBR(getFimContratoVal(row))}</td>
         `;
