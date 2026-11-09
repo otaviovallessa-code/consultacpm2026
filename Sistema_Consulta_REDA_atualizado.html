@@ -78,13 +78,13 @@
                     <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden">
 
                     <span id="fileName" class="text-xs text-blue-200 italic max-w-[160px] sm:max-w-[200px] truncate font-medium">
-                        Nenhuma planilha carregada
+                        Conectando à nuvem...
                     </span>
                 </div>
 
                 <span id="lastUpdateLabel" class="text-[11px] text-yellow-300 font-medium italic flex items-center gap-1 self-end">
                     <i data-lucide="clock" class="w-3 h-3"></i>
-                    Nenhuma atualização registrada
+                    Aguardando sincronização
                 </span>
             </div>
         </div>
@@ -485,14 +485,14 @@ function formatDateBR(val) {
     return strVal;
 }
 
-// Leitura do Excel e gravação com Promessa Assíncrona (.set)
+// Evento de alteração: lê a planilha e grava na nuvem do Firebase
 document.getElementById('excelFile').addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
     const input = this;
     const fileNameLabel = document.getElementById('fileName');
-    fileNameLabel.innerText = 'Processando arquivo...';
+    fileNameLabel.innerText = 'Enviando para nuvem...';
 
     try {
         const buffer = await file.arrayBuffer();
@@ -525,18 +525,14 @@ document.getElementById('excelFile').addEventListener('change', async function(e
             data: novosDados
         };
 
-        fileNameLabel.innerText = 'Enviando para o Firebase...';
-        console.log("Iniciando envio para o Firebase...", updateInfo);
-
-        // Aguarda a gravação real ser confirmada pelo Firebase
+        // Gravação assíncrona garantida no banco Realtime Database
         await dbRef.set(updateInfo);
 
-        console.log("Envio para o Firebase concluído com sucesso!");
-        alert(`Planilha salva na nuvem com sucesso!\n\nArquivo: ${file.name}\nRegistros: ${novosDados.length.toLocaleString('pt-BR')}`);
+        alert(`Dados sincronizados com sucesso na nuvem!\n\nArquivo: ${file.name}\nRegistros: ${novosDados.length.toLocaleString('pt-BR')}`);
     } catch (error) {
-        console.error('Erro detalhado ao enviar para o Firebase:', error);
-        fileNameLabel.innerText = 'Erro ao enviar dados';
-        alert('Falha ao gravar no Firebase.\n\nMotivo: ' + (error.message || 'Verifique sua conexão ou as regras de segurança no console do Firebase.'));
+        console.error('Erro ao enviar para o Firebase:', error);
+        fileNameLabel.innerText = 'Falha ao sincronizar nuvem';
+        alert('Erro ao gravar dados na nuvem do Firebase.\n\nDetalhes: ' + (error.message || 'Verifique as regras de segurança do banco.'));
     } finally {
         input.value = '';
     }
@@ -548,13 +544,13 @@ function displayUpdateInfo(name, dateStr) {
     lucide.createIcons();
 }
 
+// Ouvinte em tempo real: Carrega automaticamente os dados da nuvem em qualquer máquina
 window.addEventListener('DOMContentLoaded', () => {
     const fileNameLabel = document.getElementById('fileName');
     fileNameLabel.innerText = 'Conectando ao Firebase...';
 
     dbRef.on('value', (snapshot) => {
         const saved = snapshot.val();
-        console.log("Dados recebidos do Firebase:", saved ? "Dados encontrados" : "Null");
 
         if (saved && Array.isArray(saved.data)) {
             rawData = saved.data;
@@ -564,11 +560,11 @@ window.addEventListener('DOMContentLoaded', () => {
             populateFilters();
             applyFilters();
         } else {
-            fileNameLabel.innerText = 'Nenhuma planilha carregada';
+            fileNameLabel.innerText = 'Nenhuma planilha na nuvem';
         }
     }, (error) => {
-        console.error('Erro de leitura/permissão do Firebase:', error);
-        fileNameLabel.innerText = 'Erro de conexão com Firebase';
+        console.error('Erro ao ler do Firebase:', error);
+        fileNameLabel.innerText = 'Erro de conexão com nuvem';
     });
 });
 
