@@ -508,7 +508,7 @@ function formatDateBR(val) {
     return strVal;
 }
 
-// Evento de alteração com minificação de chaves para otimizar o payload do Firebase
+// Evento de alteração otimizado: Compacta e envia os dados em lotes (chunks) para o Firebase
 document.getElementById('excelFile').addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -540,9 +540,9 @@ document.getElementById('excelFile').addEventListener('change', async function(e
             throw new Error('A primeira aba da planilha está vazia.');
         }
 
-        fileNameLabel.innerText = 'Compactando e enviando...';
+        fileNameLabel.innerText = 'Compactando dados...';
 
-        // Minificação de chaves: reduz drasticamente o tamanho do JSON enviado para o Firebase
+        // Minificação rigorosa de chaves para otimizar o payload
         let novosDados = rawJson.map(row => {
             return {
                 "mat": String(row['Nº pessoal'] || row['Matrícula'] || ''),
@@ -562,14 +562,29 @@ document.getElementById('excelFile').addEventListener('change', async function(e
         });
 
         const now = new Date();
-        const updateInfo = {
-            fileName: file.name,
-            date: now.toLocaleDateString('pt-BR') + ' às ' +
-                now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-            data: novosDados
-        };
+        const dateStr = now.toLocaleDateString('pt-BR') + ' às ' +
+            now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-        await dbRef.set(updateInfo);
+        // Remove dados antigos para limpar a árvore
+        await dbRef.remove();
+
+        // Envio em lotes (chunks) de 3000 registros para contornar o limite de tamanho do Firebase
+        const chunkSize = 3000;
+        for (let i = 0; i < novosDados.length; i += chunkSize) {
+            const chunk = novosDados.slice(i, i + chunkSize);
+            const batchNum = Math.floor(i / chunkSize) + 1;
+            const totalBatches = Math.ceil(novosDados.length / chunkSize);
+            fileNameLabel.innerText = `Enviando lote ${batchNum} de ${totalBatches}...`;
+            
+            await firebase.database().ref('sistema_reda/lotes/chunk_' + Math.floor(i / chunkSize)).set(chunk);
+        }
+
+        // Atualiza os metadados finais
+        await firebase.database().ref('sistema_reda').update({
+            fileName: file.name,
+            date: dateStr,
+            totalRecords: novosDados.length
+        });
 
         alert(`Dados sincronizados com sucesso na nuvem!\n\nArquivo: ${file.name}\nRegistros: ${novosDados.length.toLocaleString('pt-BR')}`);
     } catch (error) {
@@ -587,7 +602,7 @@ function displayUpdateInfo(name, dateStr) {
     lucide.createIcons();
 }
 
-// Ouvinte em tempo real: Carrega automaticamente os dados compactados da nuvem
+// Ouvinte em tempo real otimizado: Carrega e junta os lotes particionados da nuvem automaticamente
 window.addEventListener('DOMContentLoaded', () => {
     const fileNameLabel = document.getElementById('fileName');
     fileNameLabel.innerText = 'Conectando ao Firebase...';
@@ -595,13 +610,29 @@ window.addEventListener('DOMContentLoaded', () => {
     dbRef.on('value', (snapshot) => {
         const saved = snapshot.val();
 
-        if (saved && Array.isArray(saved.data)) {
-            rawData = saved.data;
+        if (saved) {
             if (saved.fileName && saved.date) {
                 displayUpdateInfo(saved.fileName, saved.date);
             }
-            populateFilters();
-            applyFilters();
+
+            if (saved.lotes) {
+                let combinedData = [];
+                Object.keys(saved.lotes).sort().forEach(key => {
+                    if (Array.isArray(saved.lotes[key])) {
+                        combinedData = combinedData.concat(saved.lotes[key]);
+                    }
+                });
+                rawData = combinedData;
+                populateFilters();
+                applyFilters();
+            } else if (Array.isArray(saved.data)) {
+                // Compatibilidade com dados legados
+                rawData = saved.data;
+                populateFilters();
+                applyFilters();
+            } else {
+                fileNameLabel.innerText = 'Nenhuma planilha na nuvem';
+            }
         } else {
             fileNameLabel.innerText = 'Nenhuma planilha na nuvem';
         }
