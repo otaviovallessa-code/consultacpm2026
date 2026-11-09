@@ -16,6 +16,10 @@
 
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Firebase App (Modular SDK v10) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     
     <!-- Fonte Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,7 +49,7 @@
         </span>
         <span class="text-blue-300 text-[11px] font-medium hidden sm:inline flex items-center gap-1">
             <i data-lucide="layers" class="w-3.5 h-3.5"></i>
-            Gestão e Monitoramento REDA
+            Gestão e Monitoramento REDA (Nuvem)
         </span>
     </div>
 
@@ -379,6 +383,14 @@
 <script>
 lucide.createIcons();
 
+// Configuração do Firebase Realtime Database
+const firebaseConfig = {
+    databaseURL: "https://consultaredacpm-default-rtdb.firebaseio.com/"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
 let rawData = [];
 let chartCargosInstance = null;
 let chartNTEInstance = null;
@@ -472,7 +484,7 @@ function formatDateBR(val) {
     return strVal;
 }
 
-// Leitura do Excel
+// Leitura do Excel e Envio para o Firebase
 document.getElementById('excelFile').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -497,26 +509,27 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
             });
 
             const now = new Date();
+            const dateStr = now.toLocaleDateString('pt-BR') + ' às ' +
+                now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
             const updateInfo = {
                 fileName: file.name,
-                date: now.toLocaleDateString('pt-BR') + ' às ' +
-                    now.toLocaleTimeString('pt-BR', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    }),
+                date: dateStr,
                 data: rawData
             };
 
-            try {
-                localStorage.setItem('reda_cache', JSON.stringify(updateInfo));
-            } catch (err) {
-                console.warn('Arquivo muito grande para persistência local completa.', err);
-            }
-
-            displayUpdateInfo(file.name, updateInfo.date);
-            populateFilters();
-            applyFilters();
+            // Salva no Firebase Realtime Database
+            db.ref('sistema_reda').set(updateInfo)
+                .then(() => {
+                    displayUpdateInfo(file.name, dateStr);
+                    populateFilters();
+                    applyFilters();
+                    alert('Dados carregados e salvos com sucesso na nuvem do Firebase!');
+                })
+                .catch((error) => {
+                    console.error("Erro ao salvar no Firebase:", error);
+                    alert("Falha ao gravar os dados no Realtime Database. Verifique as regras de segurança no console do Firebase.");
+                });
 
         } catch (error) {
             alert('Erro ao ler a planilha. Verifique o arquivo selecionado.');
@@ -529,31 +542,49 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
 
 function displayUpdateInfo(name, dateStr) {
     document.getElementById('fileName').innerText = name;
-    document.getElementById('lastUpdateLabel').innerHTML = `<i data-lucide="clock" class="w-3 h-3"></i> Última atualização: ${dateStr}`;
+    document.getElementById('lastUpdateLabel').innerHTML = `<i data-lucide="clock" class="w-3 h-3"></i> Última atualização: ${dateStr} (Nuvem)`;
     lucide.createIcons();
 }
 
-// Inicialização
+// Inicialização: Carrega direto do Firebase ao abrir a página
 window.addEventListener('DOMContentLoaded', () => {
-    const cached = localStorage.getItem('reda_cache');
+    db.ref('sistema_reda').once('value')
+        .then((snapshot) => {
+            const val = snapshot.val();
+            if (val && val.data) {
+                rawData = val.data;
+                if (val.fileName && val.date) {
+                    displayUpdateInfo(val.fileName, val.date + " (Nuvem)");
+                }
+                populateFilters();
+                applyFilters();
+            } else {
+                // Fallback para cache local se a nuvem estiver vazia
+                loadLocalCache();
+            }
+        })
+        .catch((error) => {
+            console.warn("Erro ao buscar dados do Firebase, usando cache local.", error);
+            loadLocalCache();
+        });
+});
 
+function loadLocalCache() {
+    const cached = localStorage.getItem('reda_cache');
     if (cached) {
         try {
             const parsed = JSON.parse(cached);
             rawData = parsed.data || [];
-
             if (parsed.fileName && parsed.date) {
                 displayUpdateInfo(parsed.fileName, parsed.date);
             }
-
             populateFilters();
             applyFilters();
-
         } catch (e) {
-            console.error('Erro ao carregar cache salvo', e);
+            console.error('Erro ao carregar cache local', e);
         }
     }
-});
+}
 
 function populateFilters() {
     const nteSelect = document.getElementById('filterNTE');
@@ -842,7 +873,6 @@ function updateKPIs(data) {
 }
 
 function renderCharts(data) {
-    // 1. Gráfico de Cargos (Com tooltips melhorados e rotação limpa)
     const cargoCounts = {};
 
     data.forEach(i => {
@@ -873,9 +903,7 @@ function renderCharts(data) {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: false
-                },
+                legend: { display: false },
                 tooltip: {
                     backgroundColor: 'rgba(15, 23, 42, 0.9)',
                     titleFont: { size: 13, weight: 'bold' },
@@ -903,7 +931,6 @@ function renderCharts(data) {
         }
     });
 
-    // 2. Gráfico por NTE (Com legenda lateral limpa e clara)
     const nteCounts = {};
 
     data.forEach(i => {
