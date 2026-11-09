@@ -67,7 +67,7 @@
                 </div>
             </div>
 
-            <!-- Atualização Semanal -->
+            <!-- Atualização de Dados -->
             <div class="flex flex-col items-start md:items-end gap-1.5 w-full md:w-auto">
                 <div class="bg-white/10 backdrop-blur-md p-2 sm:p-2.5 rounded-xl border border-white/15 flex items-center gap-3 shadow-md w-full md:w-auto justify-between">
                     <label for="excelFile" class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm cursor-pointer transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg active:scale-95">
@@ -485,7 +485,7 @@ function formatDateBR(val) {
     return strVal;
 }
 
-// Evento de alteração: lê a planilha, limpa chaves inválidas para o Firebase e grava na nuvem
+// Evento de alteração: lê a planilha, sanitiza chaves para o Firebase e grava na nuvem
 document.getElementById('excelFile').addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -517,7 +517,7 @@ document.getElementById('excelFile').addEventListener('change', async function(e
             throw new Error('A primeira aba da planilha está vazia.');
         }
 
-        // Sanitização das chaves para compatibilidade com o Realtime Database do Firebase
+        // Sanitização rigorosa das chaves para compatibilidade com o Firebase Realtime Database
         novosDados = novosDados.map(row => {
             const cleanRow = {};
             for (let key in row) {
@@ -541,7 +541,7 @@ document.getElementById('excelFile').addEventListener('change', async function(e
     } catch (error) {
         console.error('Erro ao enviar para o Firebase:', error);
         fileNameLabel.innerText = 'Falha ao sincronizar nuvem';
-        alert('Erro ao gravar dados na nuvem do Firebase.\n\nDetalhes: ' + (error.message || 'Verifique as regras de segurança do banco.'));
+        alert('Falha ao gravar os dados no Realtime Database.\n\nDetalhes: ' + (error.message || 'Verifique as regras de segurança do banco.'));
     } finally {
         input.value = '';
     }
