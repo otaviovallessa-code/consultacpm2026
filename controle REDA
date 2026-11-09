@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Vencimento de Contratos REDA</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS para ler Excel/CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 font-sans p-6">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <!-- Cabeçalho e Importação -->
+        <div class="bg-white p-6 rounded-lg shadow-md flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">Painel de Vencimento de Contratos REDA</h1>
+                <p class="text-sm text-gray-500">Acompanhamento extraído da coluna "Fim Contrato"</p>
+            </div>
+            <div>
+                <label class="block mb-1 text-sm font-medium text-gray-700">Carregar planilha (NOMINAL)</label>
+                <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"/>
+            </div>
+        </div>
+
+        <!-- Indicadores Rápidos (KPIs) -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500">
+                <p class="text-gray-500 text-sm">Total de Contratos</p>
+                <p id="kpiTotal" class="text-2xl font-bold text-gray-800">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500">
+                <p class="text-gray-500 text-sm">REDA Seletivo</p>
+                <p id="kpiSeletivo" class="text-2xl font-bold text-gray-800">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-amber-500">
+                <p class="text-gray-500 text-sm">REDA Emergencial</p>
+                <p id="kpiEmergencial" class="text-2xl font-bold text-gray-800">0</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-red-500">
+                <p class="text-gray-500 text-sm">A Vencer (Próx. 30 Dias)</p>
+                <p id="kpiCritico" class="text-2xl font-bold text-gray-800">0</p>
+            </div>
+        </div>
+
+        <!-- Gráficos e Painéis de Quantitativos -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Vencimentos por Mês -->
+            <div class="bg-white p-5 rounded-lg shadow">
+                <h2 class="text-lg font-semibold text-gray-700 mb-4">Vencimentos por Mês (Fim Contrato)</h2>
+                <div class="h-64">
+                    <canvas id="chartVencimentos"></canvas>
+                </div>
+            </div>
+
+            <!-- Quantitativo por Modalidade -->
+            <div class="bg-white p-5 rounded-lg shadow">
+                <h2 class="text-lg font-semibold text-gray-700 mb-4">Contratos por Modalidade</h2>
+                <div class="h-64 flex justify-center">
+                    <canvas id="chartModalidade"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela por Cargo e Modalidade -->
+        <div class="bg-white p-5 rounded-lg shadow">
+            <h2 class="text-lg font-semibold text-gray-700 mb-4">Quantitativo por Cargo e Modalidade</h2>
+            <div class="overflow-x-auto max-h-96">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50 sticky top-0">
+                        <tr>
+                            <th class="px-4 py-2 text-left font-medium text-gray-500">Cargo</th>
+                            <th class="px-4 py-2 text-center font-medium text-gray-500">Seletivo</th>
+                            <th class="px-4 py-2 text-center font-medium text-gray-500">Emergencial</th>
+                            <th class="px-4 py-2 text-center font-medium text-gray-500">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableCargos" class="divide-y divide-gray-200">
+                        <tr><td colspan="4" class="text-center py-4 text-gray-400">Nenhum dado carregado.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Vencimentos Detalhados por Prazo (Extraído da coluna Fim Contrato) -->
+        <div class="bg-white p-5 rounded-lg shadow">
+            <h2 class="text-lg font-semibold text-gray-700 mb-4">Projeção de Vencimentos em Meses (Coluna: Fim Contrato)</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left font-medium text-gray-500">Tempo Até o Vencimento</th>
+                            <th class="px-4 py-2 text-center font-medium text-gray-500">Quantidade de Contratos</th>
+                            <th class="px-4 py-2 text-center font-medium text-gray-500">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablePrazos" class="divide-y divide-gray-200">
+                        <tr><td colspan="3" class="text-center py-4 text-gray-400">Nenhum dado carregado.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let chartVencInstance = null;
+        let chartModInstance = null;
+
+        document.getElementById('fileInput').addEventListener('change', handleFile, false);
+
+        function handleFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const data = new Uint8Array(evt.target.result);
+                const workbook = XLSX.read(data, {type: 'array', cellDates: true});
+                
+                // Busca pela aba NOMINAL ou usa a primeira aba disponível
+                const sheetName = workbook.SheetNames.find(s => s.toUpperCase().includes('NOMINAL')) || workbook.SheetNames[0];
+                const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { raw: false, dateNF: 'yyyy-mm-dd' });
+                
+                processData(jsonData);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processData(data) {
+            let total = data.length;
+            let seletivo = 0;
+            let emergencial = 0;
+            let critico = 0;
+
+            const cargos = {};
+            const vencimentosMes = {};
+            const prazosMeses = { 
+                "Já vencido": 0, 
+                "Em até 1 mês": 0, 
+                "1 a 3 meses": 0, 
+                "3 a 6 meses": 0, 
+                "6 a 12 meses": 0, 
+                "Mais de 12 meses": 0 
+            };
+
+            const hoje = new Date();
+
+            data.forEach(row => {
+                // Mapeamento das colunas da aba NOMINAL
+                const cargo = row['Cargo'] || row['CARGO'] || 'Não Informado';
+                const modalidade = (row['Modalidade'] || row['MODALIDADE'] || '').toString().toLowerCase();
+                
+                // Captura específica da coluna "Fim Contrato"
+                const dataFimVal = row['Fim Contrato'] || row['FIM CONTRATO'] || row['fim contrato'] || row['Fim_Contrato'] || row['DataFim'];
+
+                // Contagem por Modalidade
+                const isEmergencial = modalidade.includes('emergencial');
+                if (isEmergencial) emergencial++; else seletivo++;
+
+                // Agrupamento por Cargo e Modalidade
+                if (!cargos[cargo]) cargos[cargo] = { seletivo: 0, emergencial: 0, total: 0 };
+                if (isEmergencial) cargos[cargo].emergencial++; else cargos[cargo].seletivo++;
+                cargos[cargo].total++;
+
+                // Extração e cálculo usando a coluna "Fim Contrato"
+                if (dataFimVal) {
+                    const dataFim = new Date(dataFimVal);
+                    
+                    if (!isNaN(dataFim.getTime())) {
+                        // Agrupar por Ano-Mês (YYYY-MM) para ordenação correta no gráfico
+                        const anoMesKey = `${dataFim.getFullYear()}-${String(dataFim.getMonth() + 1).padStart(2, '0')}`;
+                        vencimentosMes[anoMesKey] = (vencimentosMes[anoMesKey] || 0) + 1;
+
+                        // Cálculo exato da quantidade de meses até o vencimento
+                        const diffDias = Math.ceil((dataFim - hoje) / (1000 * 60 * 60 * 24));
+                        const diffMeses = Math.ceil(diffDias / 30);
+
+                        if (diffDias <= 30 && diffDias >= 0) critico++;
+
+                        if (diffDias < 0) prazosMeses["Já vencido"]++;
+                        else if (diffMeses <= 1) prazosMeses["Em até 1 mês"]++;
+                        else if (diffMeses <= 3) prazosMeses["1 a 3 meses"]++;
+                        else if (diffMeses <= 6) prazosMeses["3 a 6 meses"]++;
+                        else if (diffMeses <= 12) prazosMeses["6 a 12 meses"]++;
+                        else prazosMeses["Mais de 12 meses"]++;
+                    }
+                }
+            });
+
+            // Atualização dos KPIs
+            document.getElementById('kpiTotal').innerText = total;
+            document.getElementById('kpiSeletivo').innerText = seletivo;
+            document.getElementById('kpiEmergencial').innerText = emergencial;
+            document.getElementById('kpiCritico').innerText = critico;
+
+            // Renderização das tabelas e gráficos
+            renderTableCargos(cargos);
+            renderTablePrazos(prazosMeses);
+            renderCharts(vencimentosMes, seletivo, emergencial);
+        }
+
+        function renderTableCargos(cargos) {
+            const tbody = document.getElementById('tableCargos');
+            tbody.innerHTML = '';
+            
+            Object.keys(cargos).sort().forEach(cargo => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-4 py-2 font-medium text-gray-800">${cargo}</td>
+                    <td class="px-4 py-2 text-center text-green-700 bg-green-50">${cargos[cargo].seletivo}</td>
+                    <td class="px-4 py-2 text-center text-amber-700 bg-amber-50">${cargos[cargo].emergencial}</td>
+                    <td class="px-4 py-2 text-center font-bold text-gray-800">${cargos[cargo].total}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderTablePrazos(prazos) {
+            const tbody = document.getElementById('tablePrazos');
+            tbody.innerHTML = '';
+
+            const statusColors = {
+                "Já vencido": "bg-red-100 text-red-800",
+                "Em até 1 mês": "bg-orange-100 text-orange-800",
+                "1 a 3 meses": "bg-yellow-100 text-yellow-800",
+                "3 a 6 meses": "bg-blue-100 text-blue-800",
+                "6 a 12 meses": "bg-indigo-100 text-indigo-800",
+                "Mais de 12 meses": "bg-green-100 text-green-800"
+            };
+
+            Object.keys(prazos).forEach(prazo => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-4 py-2 font-medium text-gray-800">${prazo}</td>
+                    <td class="px-4 py-2 text-center font-bold">${prazos[prazo]}</td>
+                    <td class="px-4 py-2 text-center">
+                        <span class="px-2 py-1 rounded-full text-xs font-semibold ${statusColors[prazo] || 'bg-gray-100'}">
+                            ${prazos[prazo] > 0 ? (prazo.includes('vencido') || prazo.includes('1 mês') ? 'Crítico' : 'Acompanhar') : 'OK'}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderCharts(vencimentosMes, seletivo, emergencial) {
+            if (chartVencInstance) chartVencInstance.destroy();
+            if (chartModInstance) chartModInstance.destroy();
+
+            // Ordena os meses em ordem cronológica
+            const mesesOrdenados = Object.keys(vencimentosMes).sort();
+            const valoresOrdenados = mesesOrdenados.map(m => vencimentosMes[m]);
+
+            // Gráfico de Vencimentos por Mês
+            const ctxVenc = document.getElementById('chartVencimentos').getContext('2d');
+            chartVencInstance = new Chart(ctxVenc, {
+                type: 'bar',
+                data: {
+                    labels: mesesOrdenados,
+                    datasets: [{
+                        label: 'Contratos Encerrando (Fim Contrato)',
+                        data: valoresOrdenados,
+                        backgroundColor: '#3B82F6'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // Gráfico por Modalidade
+            const ctxMod = document.getElementById('chartModalidade').getContext('2d');
+            chartModInstance = new Chart(ctxMod, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Seletivo', 'Emergencial'],
+                    datasets: [{
+                        data: [seletivo, emergencial],
+                        backgroundColor: ['#22C55E', '#F59E0B']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+    </script>
+</body>
+</html>
