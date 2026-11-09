@@ -508,7 +508,7 @@ function formatDateBR(val) {
     return strVal;
 }
 
-// Evento de alteração atômico otimizado: compacta e grava em única requisição compacta
+// Upload em lotes (chunks) de 2000 registros para garantir 100% de sucesso sem estourar limite do Firebase
 document.getElementById('excelFile').addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -540,9 +540,8 @@ document.getElementById('excelFile').addEventListener('change', async function(e
             throw new Error('A primeira aba da planilha está vazia.');
         }
 
-        fileNameLabel.innerText = 'Compactando para nuvem...';
+        fileNameLabel.innerText = 'Preparando lotes...';
 
-        // Minificação rigorosa de chaves e exclusão de campos nulos/vazios desnecessários para caber no limite
         let novosDados = rawJson.map(row => {
             return {
                 "mat": String(row['Nº pessoal'] || row['Matrícula'] || ''),
@@ -565,15 +564,27 @@ document.getElementById('excelFile').addEventListener('change', async function(e
         const dateStr = now.toLocaleDateString('pt-BR') + ' às ' +
             now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-        const payload = {
+        // Limpa os lotes antigos da árvore antes de gravar os novos
+        await dbRef.remove();
+
+        const chunkSize = 2000;
+        const totalChunks = Math.ceil(novosDados.length / chunkSize);
+
+        for (let i = 0; i < novosDados.length; i += chunkSize) {
+            const chunk = novosDados.slice(i, i + chunkSize);
+            const batchNum = Math.floor(i / chunkSize) + 1;
+            fileNameLabel.innerText = `Enviando lote ${batchNum} de ${totalChunks}...`;
+            
+            await firebase.database().ref(`sistema_reda/lotes/chunk_${batchNum}`).set(chunk);
+        }
+
+        // Salva os metadados principais ao concluir
+        await firebase.database().ref('sistema_reda/meta').set({
             fileName: file.name,
             date: dateStr,
             totalRecords: novosDados.length,
-            data: novosDados
-        };
-
-        // Gravação atômica única limpa no nó principal
-        await dbRef.set(payload);
+            totalChunks: totalChunks
+        });
 
         alert(`Dados sincronizados com sucesso na nuvem!\n\nArquivo: ${file.name}\nRegistros: ${novosDados.length.toLocaleString('pt-BR')}`);
     } catch (error) {
@@ -591,7 +602,7 @@ function displayUpdateInfo(name, dateStr) {
     lucide.createIcons();
 }
 
-// Ouvinte em tempo real unificado
+// Leitor em tempo real que reconstrói os dados a partir dos lotes salvos
 window.addEventListener('DOMContentLoaded', () => {
     const fileNameLabel = document.getElementById('fileName');
     fileNameLabel.innerText = 'Conectando ao Firebase...';
@@ -600,16 +611,13 @@ window.addEventListener('DOMContentLoaded', () => {
         const saved = snapshot.val();
 
         if (saved) {
-            if (saved.fileName && saved.date) {
+            if (saved.meta && saved.meta.fileName && saved.meta.date) {
+                displayUpdateInfo(saved.meta.fileName, saved.meta.date);
+            } else if (saved.fileName && saved.date) {
                 displayUpdateInfo(saved.fileName, saved.date);
             }
 
-            if (Array.isArray(saved.data)) {
-                rawData = saved.data;
-                populateFilters();
-                applyFilters();
-            } else if (saved.lotes) {
-                // Compatibilidade com estrutura anterior de lotes
+            if (saved.lotes) {
                 let combinedData = [];
                 Object.keys(saved.lotes).sort().forEach(key => {
                     if (Array.isArray(saved.lotes[key])) {
@@ -617,6 +625,11 @@ window.addEventListener('DOMContentLoaded', () => {
                     }
                 });
                 rawData = combinedData;
+                populateFilters();
+                applyFilters();
+            } else if (Array.isArray(saved.data)) {
+                // Compatibilidade com formato antigo
+                rawData = saved.data;
                 populateFilters();
                 applyFilters();
             } else {
