@@ -155,7 +155,7 @@
             </div>
         </div>
 
-        <!-- Filtros Globais (Sem indicação de colunas no texto) -->
+        <!-- Filtros Globais -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-900 via-red-600 to-yellow-500"></div>
 
@@ -220,7 +220,7 @@
             </div>
         </div>
 
-        <!-- Consulta Individual (Permite CPF, Matrícula ou Código da Unidade - Coluna D / Codsec) -->
+        <!-- Consulta Individual (Exclusivo CPF, Matrícula ou Código D / Codsec) -->
         <div class="bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 p-6 sm:p-8 rounded-2xl text-white shadow-xl border-l-4 border-yellow-400 relative">
 
             <label class="block text-xs font-extrabold uppercase tracking-wider mb-3 flex items-center gap-2 text-yellow-400">
@@ -230,7 +230,7 @@
 
             <div class="flex flex-col sm:flex-row gap-3">
                 <div class="relative flex-1">
-                    <input type="text" id="searchIndividualInput" placeholder="Digite o CPF, Matrícula ou Código da Unidade (Codsec) para ver os detalhes..." class="w-full text-sm p-3.5 pl-4 rounded-xl text-slate-900 border border-slate-700 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/30 outline-none shadow-inner bg-white placeholder:text-slate-400 font-medium">
+                    <input type="text" id="searchIndividualInput" placeholder="Digite o CPF, Matrícula ou Código da Unidade (Codsec)..." class="w-full text-sm p-3.5 pl-4 rounded-xl text-slate-900 border border-slate-700 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/30 outline-none shadow-inner bg-white placeholder:text-slate-400 font-medium">
                 </div>
 
                 <button id="btnSearchIndividual" class="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-blue-950 font-bold px-8 py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg active:scale-95">
@@ -312,7 +312,7 @@
 
             <p id="individualNotFound" class="hidden text-xs text-amber-300 font-semibold mt-4 flex items-center gap-2 bg-amber-950/40 p-3 rounded-xl border border-amber-800/40">
                 <i data-lucide="alert-circle" class="w-4 h-4"></i>
-                Nenhum servidor ou unidade encontrado com este CPF, Matrícula ou Código Codsec.
+                Nenhum registro encontrado com este CPF, Matrícula ou Código Codsec.
             </p>
         </div>
 
@@ -497,7 +497,7 @@ function cleanAndNormalizeData(jsonRows) {
         const codsec = getVal(['Codsec', 'Cod. SEC', 'CÓDIGO'], 3); // Coluna D
         const unidadeOrg = getVal(['Unid organizacional', 'UNIDADE ESCOLAR', 'Unidade Organizacional'], 4);
         
-        // Substituído para pegar a Coluna I (Index 8) como Situação Folha
+        // Mapeia a Coluna I (Index 8) como Situação Folha
         const situacaoFolha = getVal(['SITUAÇÃO FOLHA', 'Situação Folha', 'Situacao Folha', 'SITUAÇÃO ESCOLAR'], 8);
         
         const numPessoal = getVal(['Nº pessoal', 'Matrícula', 'N_ pessoal'], 6);
@@ -796,7 +796,7 @@ document.getElementById('searchIndividualInput').addEventListener('keypress', fu
     if (e.key === 'Enter') executeIndividualSearch();
 });
 
-// Busca individual permitindo CPF, Matrícula ou Código da Unidade (Coluna D / Codsec)
+// Busca individual estrita (apenas CPF ou Matrícula)
 function executeIndividualSearch() {
     const query = document.getElementById('searchIndividualInput').value.trim().toLowerCase();
     const panel = document.getElementById('individualPanel');
@@ -809,8 +809,7 @@ function executeIndividualSearch() {
     const found = rawData.find(item => {
         const cpf = String(item['CPF'] || '').toLowerCase();
         const matricula = String(item['Nº pessoal'] || '').toLowerCase();
-        const codsec = String(item['Codsec'] || '').toLowerCase();
-        return cpf.includes(query) || matricula.includes(query) || codsec.includes(query);
+        return cpf === query || matricula === query || cpf.includes(query) || matricula.includes(query);
     });
 
     if (found) {
@@ -836,15 +835,17 @@ function executeIndividualSearch() {
         document.getElementById('indMatricula').innerText = found['Nº pessoal'];
         document.getElementById('indCodsec').innerText = found['Codsec'];
 
-        const sitFolha = found['SITUAÇÃO FOLHA'];
+        // Exibição clara de "Em Folha" ou "Fora de Folha" baseada no conteúdo da Coluna I
+        const sitFolha = found['SITUAÇÃO FOLHA'] || '-';
         const badge = document.getElementById('indStatusFolhaBadge');
-        badge.innerText = sitFolha;
         const sitUpper = String(sitFolha).toUpperCase();
 
-        if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE')) {
-            badge.className = "px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+        if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE') || sitUpper.includes('EM FOLHA')) {
+            badge.innerText = "Em Folha";
+            badge.className = "px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm";
         } else {
-            badge.className = "px-4 py-1.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300";
+            badge.innerText = "Fora de Folha";
+            badge.className = "px-4 py-1.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300 shadow-sm";
         }
         lucide.createIcons();
     } else {
@@ -918,7 +919,7 @@ function updateKPIs(data) {
 
     const emFolhaCount = data.filter(i => {
         const sit = String(i['SITUAÇÃO FOLHA']).toUpperCase();
-        return sit.includes('ATIVO') || sit.includes('SIM') || sit.includes('ATIVIDADE');
+        return sit.includes('ATIVO') || sit.includes('SIM') || sit.includes('ATIVIDADE') || sit.includes('EM FOLHA');
     }).length;
     document.getElementById('kpiEmFolha').innerText = emFolhaCount.toLocaleString('pt-BR');
 
@@ -993,17 +994,19 @@ function renderTable(data) {
 
         const sit = row['SITUAÇÃO FOLHA'];
         const sitUpper = String(sit).toUpperCase();
-        let badge = `<span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg text-[10px] font-semibold">${sit}</span>`;
-        if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE')) {
-            badge = `<span class="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg text-[10px] font-bold">${sit}</span>`;
-        } else if (sitUpper.includes('INATIVO') || sitUpper.includes('EXCLUIDO') || sitUpper.includes('NAO')) {
-            badge = `<span class="bg-red-100 text-red-800 px-2.5 py-1 rounded-lg text-[10px] font-bold">${sit}</span>`;
+        
+        let badgeText = "Fora de Folha";
+        let badgeClass = "bg-rose-100 text-rose-800 px-2.5 py-1 rounded-lg text-[10px] font-bold";
+        
+        if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE') || sitUpper.includes('EM FOLHA')) {
+            badgeText = "Em Folha";
+            badgeClass = "bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg text-[10px] font-bold";
         }
 
         tr.innerHTML = `
             <td class="px-4 py-3.5 font-mono font-bold">${row['Nº pessoal']}</td>
             <td class="px-4 py-3.5 font-bold text-blue-950">${row['Nome do empregado']}</td>
-            <td class="px-4 py-3.5">${badge}</td>
+            <td class="px-4 py-3.5"><span class="${badgeClass}">${badgeText}</span></td>
             <td class="px-4 py-3.5">${row['Cargo']}</td>
             <td class="px-4 py-3.5"><span class="bg-blue-50 text-blue-900 px-2.5 py-1 rounded-lg text-[10px] font-semibold">${row['Modalidade']}</span></td>
             <td class="px-4 py-3.5">${row['Unid organizacional']}</td>
