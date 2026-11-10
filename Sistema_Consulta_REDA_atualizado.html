@@ -383,7 +383,7 @@ let rawData = [];
 let chartCargosInstance = null;
 let chartNTEInstance = null;
 
-// Função auxiliar para sanitizar as chaves e evitar erros em bancos de dados (como Firebase)
+// Função auxiliar rigorosa para remover todos os caracteres proibidos pelo Firebase (. , # , $ , / , [ , ])
 function sanitizeKeys(obj) {
     if (typeof obj !== 'object' || obj === null) return obj;
     
@@ -394,8 +394,8 @@ function sanitizeKeys(obj) {
     const sanitized = {};
     for (let key in obj) {
         if (Object.prototype.hasOwnProperty.call(obj, key)) {
-            // Substitui caracteres inválidos como pontos (.) por sublinhado (_)
-            const cleanKey = key.replace(/[.#$[\]]/g, '_');
+            // Substitui barras, pontos e outros caracteres especiais por sublinhado '_'
+            const cleanKey = key.replace(/[.#$\[\]/]/g, '_');
             sanitized[cleanKey] = sanitizeKeys(obj[key]);
         }
     }
@@ -515,7 +515,7 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
                 dateNF: 'dd/mm/yyyy'
             });
 
-            // Aplica a sanitização para remover caracteres proibidos em chaves (como pontos)
+            // Aplica a sanitização completa para remover caracteres proibidos das chaves (pontos, barras, etc)
             rawData = sanitizeKeys(tempRawData);
 
             const now = new Date();
