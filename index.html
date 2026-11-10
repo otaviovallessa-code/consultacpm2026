@@ -176,7 +176,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">NTE</label>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">NTE (Coluna A)</label>
                     <select id="filterNTE" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
                         <option value="">Todos os NTEs</option>
                     </select>
@@ -190,7 +190,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">Unidade Escolar</label>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">Unidade Escolar (Col. E)</label>
                     <select id="filterUnidade" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
                         <option value="">Todas as Unidades</option>
                     </select>
@@ -211,7 +211,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">Situação Folha</label>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">Situação Escolar</label>
                     <select id="filterFolha" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
                         <option value="">Todas as Situações</option>
                     </select>
@@ -220,17 +220,17 @@
             </div>
         </div>
 
-        <!-- Consulta Individual (Exclusivo CPF, Matrícula ou Código D / Codsec) -->
+        <!-- Consulta Individual -->
         <div class="bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 p-6 sm:p-8 rounded-2xl text-white shadow-xl border-l-4 border-yellow-400 relative">
 
             <label class="block text-xs font-extrabold uppercase tracking-wider mb-3 flex items-center gap-2 text-yellow-400">
                 <i data-lucide="user-search" class="w-5 h-5"></i>
-                Consulta Individual de Servidor ou Unidade (CPF, Matrícula ou Código D / Codsec)
+                Consulta Individual de Servidor (CPF ou Matrícula)
             </label>
 
             <div class="flex flex-col sm:flex-row gap-3">
                 <div class="relative flex-1">
-                    <input type="text" id="searchIndividualInput" placeholder="Digite o CPF, Matrícula ou Código da Unidade (Codsec)..." class="w-full text-sm p-3.5 pl-4 rounded-xl text-slate-900 border border-slate-700 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/30 outline-none shadow-inner bg-white placeholder:text-slate-400 font-medium">
+                    <input type="text" id="searchIndividualInput" placeholder="Digite o CPF ou a Matrícula (Nº pessoal) para ver o painel completo..." class="w-full text-sm p-3.5 pl-4 rounded-xl text-slate-900 border border-slate-700 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/30 outline-none shadow-inner bg-white placeholder:text-slate-400 font-medium">
                 </div>
 
                 <button id="btnSearchIndividual" class="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-blue-950 font-bold px-8 py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg active:scale-95">
@@ -247,13 +247,13 @@
                         <i data-lucide="user-check" class="w-6 h-6 text-blue-900"></i>
                         Nome do Servidor
                     </h3>
-                    <span id="indStatusFolhaBadge" class="px-4 py-1.5 rounded-full text-xs font-bold shadow-sm">Situação Folha</span>
+                    <span id="indStatusFolhaBadge" class="px-4 py-1.5 rounded-full text-xs font-bold shadow-sm">Situação Escolar</span>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
 
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
-                        <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">NTE</span>
+                        <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">NTE (Coluna A)</span>
                         <span id="indNTE" class="font-extrabold text-blue-950 text-sm">-</span>
                     </div>
 
@@ -263,7 +263,7 @@
                     </div>
 
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 lg:col-span-2">
-                        <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Unidade Escolar</span>
+                        <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Unidade Escolar (Col. E c/ Cód. D)</span>
                         <span id="indUnidade" class="font-extrabold text-blue-950 text-sm leading-tight block">-</span>
                     </div>
 
@@ -302,17 +302,12 @@
                         <span id="indMatricula" class="font-mono font-bold text-slate-800 text-sm">-</span>
                     </div>
 
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
-                        <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Código da Unidade (Codsec)</span>
-                        <span id="indCodsec" class="font-mono font-bold text-blue-900 text-sm">-</span>
-                    </div>
-
                 </div>
             </div>
 
             <p id="individualNotFound" class="hidden text-xs text-amber-300 font-semibold mt-4 flex items-center gap-2 bg-amber-950/40 p-3 rounded-xl border border-amber-800/40">
                 <i data-lucide="alert-circle" class="w-4 h-4"></i>
-                Nenhum registro encontrado com este CPF, Matrícula ou Código Codsec.
+                Nenhum servidor encontrado com este CPF ou Matrícula.
             </p>
         </div>
 
@@ -369,7 +364,7 @@
                         <tr>
                             <th class="px-4 py-3.5">Matrícula</th>
                             <th class="px-4 py-3.5">Nome do Empregado</th>
-                            <th class="px-4 py-3.5">Situação Folha</th>
+                            <th class="px-4 py-3.5">Situação Escolar</th>
                             <th class="px-4 py-3.5">Cargo / Função</th>
                             <th class="px-4 py-3.5">Modalidade</th>
                             <th class="px-4 py-3.5">Unidade Escolar</th>
@@ -494,22 +489,19 @@ function cleanAndNormalizeData(jsonRows) {
 
         const nte = getVal(['NTE', 'NTE (SEDE)', 'SEDE'], 0);
         const municipio = getVal(['Município', 'Municipio'], 1);
-        const codsec = getVal(['Codsec', 'Cod. SEC', 'CÓDIGO'], 3); // Coluna D
+        const codsec = getVal(['Codsec', 'Cod. SEC'], 3);
         const unidadeOrg = getVal(['Unid organizacional', 'UNIDADE ESCOLAR', 'Unidade Organizacional'], 4);
-        
-        // Mapeia a Coluna I (Index 8) como Situação Folha
-        const situacaoFolha = getVal(['SITUAÇÃO FOLHA', 'Situação Folha', 'Situacao Folha', 'SITUAÇÃO ESCOLAR'], 8);
-        
+        const situacaoEscolar = getVal(['SITUAÇÃO ESCOLAR', 'Situação Escolar', 'Situação Folha'], 5);
         const numPessoal = getVal(['Nº pessoal', 'Matrícula', 'N_ pessoal'], 6);
         const nomeEmpregado = getVal(['Nome do empregado', 'Nome'], 7);
-        const admissao = getVal(['ADMISSÃO', 'Admissão', 'Admissao'], 9);
-        const fimContrato = getVal(['Fim contrato', 'Fim Contrato'], 10);
-        const cpf = getVal(['CPF'], 11);
-        const telefone = getVal(['TELEFONE', 'Telefone'], 12);
-        const celular = getVal(['CELULAR', 'Celular'], 13);
-        const email = getVal(['EMAIL', 'E-mail', 'Email'], 14);
-        const cargo = getVal(['Cargo', 'CARGO'], 15);
-        const modalidade = getVal(['Modalidade', 'MODALIDADE'], 16);
+        const admissao = getVal(['ADMISSÃO', 'Admissão', 'Admissao'], 8);
+        const fimContrato = getVal(['Fim contrato', 'Fim Contrato'], 9);
+        const cpf = getVal(['CPF'], 10);
+        const telefone = getVal(['TELEFONE', 'Telefone'], 11);
+        const celular = getVal(['CELULAR', 'Celular'], 12);
+        const email = getVal(['EMAIL', 'E-mail', 'Email'], 13);
+        const cargo = getVal(['Cargo', 'CARGO'], 14);
+        const modalidade = getVal(['Modalidade', 'MODALIDADE'], 15);
 
         let unidadeCompleta = unidadeOrg || '-';
         if (codsec && codsec !== 'nan' && codsec !== '-') {
@@ -519,9 +511,8 @@ function cleanAndNormalizeData(jsonRows) {
         return {
             'NTE': nte || '-',
             'Município': municipio || '-',
-            'Codsec': codsec || '-',
             'Unid organizacional': unidadeCompleta,
-            'SITUAÇÃO FOLHA': situacaoFolha || '-',
+            'SITUAÇÃO ESCOLAR': situacaoEscolar || '-',
             'Nº pessoal': numPessoal || '-',
             'Nome do empregado': nomeEmpregado || '-',
             'ADMISSÃO': admissao || '-',
@@ -626,7 +617,7 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
             displayUpdateInfo(file.name, updateInfo.date);
             populateFilters();
             applyFilters();
-            alert('Planilha carregada e gravada na nuvem com sucesso!');
+            alert('Planilha carregada e gravada na nuvem do Firebase com sucesso!');
 
         } catch (error) {
             alert('Erro ao ler a planilha. Verifique o arquivo selecionado.');
@@ -747,7 +738,7 @@ function populateFilters() {
 
     let dataForFolha = dataForMod;
     if (selectedMod) dataForFolha = dataForMod.filter(item => item['Modalidade'] === selectedMod);
-    const folhas = [...new Set(dataForFolha.map(item => item['SITUAÇÃO FOLHA']).filter(v => v && v !== '-'))].sort();
+    const folhas = [...new Set(dataForFolha.map(item => item['SITUAÇÃO ESCOLAR']).filter(v => v && v !== '-'))].sort();
     fillSelect('filterFolha', folhas, folhas.includes(selectedFolha) ? selectedFolha : "");
 }
 
@@ -796,7 +787,6 @@ document.getElementById('searchIndividualInput').addEventListener('keypress', fu
     if (e.key === 'Enter') executeIndividualSearch();
 });
 
-// Busca individual estrita (apenas CPF ou Matrícula)
 function executeIndividualSearch() {
     const query = document.getElementById('searchIndividualInput').value.trim().toLowerCase();
     const panel = document.getElementById('individualPanel');
@@ -809,7 +799,7 @@ function executeIndividualSearch() {
     const found = rawData.find(item => {
         const cpf = String(item['CPF'] || '').toLowerCase();
         const matricula = String(item['Nº pessoal'] || '').toLowerCase();
-        return cpf === query || matricula === query || cpf.includes(query) || matricula.includes(query);
+        return cpf.includes(query) || matricula.includes(query);
     });
 
     if (found) {
@@ -833,19 +823,16 @@ function executeIndividualSearch() {
         const telInfo = [found['TELEFONE'], found['CELULAR'], found['EMAIL']].filter(v => v && v !== 'nan' && v !== '-').join(' | ');
         document.getElementById('indTelefone').innerText = telInfo || '-';
         document.getElementById('indMatricula').innerText = found['Nº pessoal'];
-        document.getElementById('indCodsec').innerText = found['Codsec'];
 
-        // Exibição clara de "Em Folha" ou "Fora de Folha" baseada no conteúdo da Coluna I
-        const sitFolha = found['SITUAÇÃO FOLHA'] || '-';
+        const sitFolha = found['SITUAÇÃO ESCOLAR'];
         const badge = document.getElementById('indStatusFolhaBadge');
+        badge.innerText = sitFolha;
         const sitUpper = String(sitFolha).toUpperCase();
 
-        if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE') || sitUpper.includes('EM FOLHA')) {
-            badge.innerText = "Em Folha";
-            badge.className = "px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm";
+        if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE')) {
+            badge.className = "px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
         } else {
-            badge.innerText = "Fora de Folha";
-            badge.className = "px-4 py-1.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300 shadow-sm";
+            badge.className = "px-4 py-1.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300";
         }
         lucide.createIcons();
     } else {
@@ -868,7 +855,7 @@ function getFilteredData() {
                (!unidVal || item['Unid organizacional'] === unidVal) &&
                (!cargoVal || item['Cargo'] === cargoVal) &&
                (!modVal || item['Modalidade'] === modVal) &&
-               (!folhaVal || item['SITUAÇÃO FOLHA'] === folhaVal);
+               (!folhaVal || item['SITUAÇÃO ESCOLAR'] === folhaVal);
     });
 }
 
@@ -896,7 +883,7 @@ document.getElementById('btnExportExcel').addEventListener('click', () => {
     const exportRows = filteredData.map(item => ({
         'Matrícula': item['Nº pessoal'],
         'Nome do Empregado': item['Nome do empregado'],
-        'Situação Folha': item['SITUAÇÃO FOLHA'],
+        'Situação Escolar': item['SITUAÇÃO ESCOLAR'],
         'Cargo / Função': item['Cargo'],
         'Modalidade': item['Modalidade'],
         'Unidade Organizacional': item['Unid organizacional'],
@@ -918,8 +905,8 @@ function updateKPIs(data) {
     document.getElementById('kpiTotal').innerText = data.length.toLocaleString('pt-BR');
 
     const emFolhaCount = data.filter(i => {
-        const sit = String(i['SITUAÇÃO FOLHA']).toUpperCase();
-        return sit.includes('ATIVO') || sit.includes('SIM') || sit.includes('ATIVIDADE') || sit.includes('EM FOLHA');
+        const sit = String(i['SITUAÇÃO ESCOLAR']).toUpperCase();
+        return sit.includes('ATIVO') || sit.includes('SIM') || sit.includes('ATIVIDADE');
     }).length;
     document.getElementById('kpiEmFolha').innerText = emFolhaCount.toLocaleString('pt-BR');
 
@@ -992,21 +979,19 @@ function renderTable(data) {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50/80 border-b border-slate-100 transition-colors';
 
-        const sit = row['SITUAÇÃO FOLHA'];
+        const sit = row['SITUAÇÃO ESCOLAR'];
         const sitUpper = String(sit).toUpperCase();
-        
-        let badgeText = "Fora de Folha";
-        let badgeClass = "bg-rose-100 text-rose-800 px-2.5 py-1 rounded-lg text-[10px] font-bold";
-        
-        if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE') || sitUpper.includes('EM FOLHA')) {
-            badgeText = "Em Folha";
-            badgeClass = "bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg text-[10px] font-bold";
+        let badge = `<span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg text-[10px] font-semibold">${sit}</span>`;
+        if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE')) {
+            badge = `<span class="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg text-[10px] font-bold">${sit}</span>`;
+        } else if (sitUpper.includes('INATIVO') || sitUpper.includes('EXCLUIDO') || sitUpper.includes('NAO')) {
+            badge = `<span class="bg-red-100 text-red-800 px-2.5 py-1 rounded-lg text-[10px] font-bold">${sit}</span>`;
         }
 
         tr.innerHTML = `
             <td class="px-4 py-3.5 font-mono font-bold">${row['Nº pessoal']}</td>
             <td class="px-4 py-3.5 font-bold text-blue-950">${row['Nome do empregado']}</td>
-            <td class="px-4 py-3.5"><span class="${badgeClass}">${badgeText}</span></td>
+            <td class="px-4 py-3.5">${badge}</td>
             <td class="px-4 py-3.5">${row['Cargo']}</td>
             <td class="px-4 py-3.5"><span class="bg-blue-50 text-blue-900 px-2.5 py-1 rounded-lg text-[10px] font-semibold">${row['Modalidade']}</span></td>
             <td class="px-4 py-3.5">${row['Unid organizacional']}</td>
