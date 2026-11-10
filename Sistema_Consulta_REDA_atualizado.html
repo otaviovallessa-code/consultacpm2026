@@ -38,28 +38,28 @@
     </div>
 
     <!-- Faixa Oficial do Governo -->
-    <div class="bg-blue-950 text-white text-xs py-1.5 px-4 sm:px-8 border-b border-blue-900/60 flex justify-between items-center">
+    <div class="bg-blue-950 text-white text-xs py-2 px-4 sm:px-8 border-b border-blue-900/60 flex justify-between items-center shadow-inner">
         <span class="font-semibold tracking-wide flex items-center gap-2">
             <i data-lucide="shield-check" class="w-4 h-4 text-yellow-400"></i>
             GOVERNO DO ESTADO DA BAHIA <span class="hidden sm:inline text-blue-300">|</span> <span class="hidden sm:inline font-normal text-blue-200">Secretaria da Educação — SEC</span>
         </span>
-        <span class="text-blue-300 text-[11px] font-medium hidden sm:inline flex items-center gap-1">
-            <i data-lucide="layers" class="w-3.5 h-3.5"></i>
-            Gestão e Monitoramento REDA (Nuvem)
+        <span class="text-blue-300 text-[11px] font-medium hidden sm:inline flex items-center gap-1.5">
+            <i data-lucide="cloud" class="w-3.5 h-3.5 text-emerald-400"></i>
+            Gestão e Monitoramento REDA (Nuvem / Cache Ativo)
         </span>
     </div>
 
     <!-- Header Principal -->
-    <header class="bg-gradient-to-r from-blue-900 via-blue-900 to-indigo-950 text-white shadow-xl border-b-4 border-red-600">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
+    <header class="bg-gradient-to-r from-blue-950 via-blue-900 to-indigo-950 text-white shadow-xl border-b-4 border-red-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
 
             <div class="flex items-center gap-4">
-                <div class="p-3 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-inner flex items-center justify-center">
-                    <i data-lucide="building-2" class="w-9 h-9 text-yellow-400"></i>
+                <div class="p-3.5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-inner flex items-center justify-center">
+                    <i data-lucide="building-2" class="w-10 h-10 text-yellow-400"></i>
                 </div>
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white drop-shadow-sm">Painel do Quantitativo REDA</h1>
-                    <p class="text-blue-200 text-xs sm:text-sm font-medium flex items-center gap-1.5 mt-0.5">
+                    <p class="text-blue-200 text-xs sm:text-sm font-medium flex items-center gap-1.5 mt-1">
                         <span>Secretaria da Educação</span>
                         <span class="text-blue-400">•</span>
                         <span class="text-yellow-300 font-semibold">Coordenação de Provimento e Movimentação</span>
@@ -67,25 +67,40 @@
                 </div>
             </div>
 
-            <!-- Atualização Semanal -->
-            <div class="flex flex-col items-start md:items-end gap-1.5 w-full md:w-auto">
-                <div class="bg-white/10 backdrop-blur-md p-2 sm:p-2.5 rounded-xl border border-white/15 flex items-center gap-3 shadow-md w-full md:w-auto justify-between">
-                    <label for="excelFile" class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white px-4 py-2 rounded-lg font-semibold text-xs sm:text-sm cursor-pointer transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg active:scale-95">
-                        <i data-lucide="upload-cloud" class="w-4 h-4"></i>
-                        Atualizar Dados (.xlsx)
-                    </label>
+            <!-- Bloco de Controles e Ações (Upload + Área ADM + Reset da Nuvem) -->
+            <div class="flex flex-col items-start lg:items-end gap-3 w-full lg:w-auto bg-black/20 p-4 rounded-2xl border border-white/10 shadow-lg">
+                <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-start lg:justify-end">
+                    
+                    <div class="flex items-center gap-2">
+                        <label for="excelFile" class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white px-4 py-2.5 rounded-xl font-semibold text-xs cursor-pointer transition-all flex items-center gap-2 shadow-md active:scale-95">
+                            <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+                            Carregar Planilha (.xlsx)
+                        </label>
+                        <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden">
+                    </div>
 
-                    <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden">
+                    <!-- Botão Área ADM -->
+                    <button id="btnOpenAdmModal" class="bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-lg active:scale-95">
+                        <i data-lucide="lock" class="w-4 h-4"></i>
+                        <span>ÁREA ADM</span>
+                    </button>
 
-                    <span id="fileName" class="text-xs text-blue-200 italic max-w-[160px] sm:max-w-[200px] truncate font-medium">
-                        Nenhuma planilha carregada
-                    </span>
+                    <!-- Botão Limpar Dados da Nuvem (Exclusivo ADM) -->
+                    <button id="btnClearCloud" class="hidden bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-lg active:scale-95 animate-in fade-in">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        <span>Limpar Dados da Nuvem</span>
+                    </button>
                 </div>
 
-                <span id="lastUpdateLabel" class="text-[11px] text-yellow-300 font-medium italic flex items-center gap-1 self-end">
-                    <i data-lucide="clock" class="w-3 h-3"></i>
-                    Nenhuma atualização registrada
-                </span>
+                <div class="flex flex-wrap justify-between items-center w-full gap-2 text-xs">
+                    <span id="fileName" class="text-blue-200 italic font-medium truncate max-w-[200px]">
+                        Nenhuma planilha carregada
+                    </span>
+                    <span id="lastUpdateLabel" class="text-yellow-300 font-semibold italic flex items-center gap-1">
+                        <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                        Aguardando dados...
+                    </span>
+                </div>
             </div>
         </div>
     </header>
@@ -95,60 +110,60 @@
         <!-- KPI Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
 
-            <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-blue-900 flex items-center justify-between">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-blue-900 flex items-center justify-between">
                 <div>
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total de Servidores</p>
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Total de Servidores</p>
                     <h3 id="kpiTotal" class="text-3xl font-black text-blue-950 mt-1">0</h3>
                 </div>
-                <div class="p-3.5 bg-blue-50 text-blue-900 rounded-xl">
+                <div class="p-4 bg-blue-50 text-blue-900 rounded-xl shadow-inner">
                     <i data-lucide="users" class="w-6 h-6"></i>
                 </div>
             </div>
 
-            <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-emerald-600 flex items-center justify-between">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-emerald-600 flex items-center justify-between">
                 <div>
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Em Atividade</p>
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Em Atividade</p>
                     <h3 id="kpiEmFolha" class="text-3xl font-black text-emerald-700 mt-1">0</h3>
                 </div>
-                <div class="p-3.5 bg-emerald-50 text-emerald-700 rounded-xl">
+                <div class="p-4 bg-emerald-50 text-emerald-700 rounded-xl shadow-inner">
                     <i data-lucide="user-check" class="w-6 h-6"></i>
                 </div>
             </div>
 
-            <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-sky-600 flex items-center justify-between">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-sky-600 flex items-center justify-between">
                 <div>
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Municípios Atendidos</p>
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Municípios Atendidos</p>
                     <h3 id="kpiMunicipios" class="text-3xl font-black text-blue-950 mt-1">0</h3>
                 </div>
-                <div class="p-3.5 bg-sky-50 text-sky-700 rounded-xl">
+                <div class="p-4 bg-sky-50 text-sky-700 rounded-xl shadow-inner">
                     <i data-lucide="map-pin" class="w-6 h-6"></i>
                 </div>
             </div>
 
-            <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-amber-500 flex items-center justify-between">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-amber-500 flex items-center justify-between">
                 <div>
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">NTEs Abrangidos</p>
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">NTEs Abrangidos</p>
                     <h3 id="kpiNte" class="text-3xl font-black text-blue-950 mt-1">0</h3>
                 </div>
-                <div class="p-3.5 bg-amber-50 text-amber-600 rounded-xl">
+                <div class="p-4 bg-amber-50 text-amber-600 rounded-xl shadow-inner">
                     <i data-lucide="landmark" class="w-6 h-6"></i>
                 </div>
             </div>
         </div>
 
         <!-- Filtros Globais -->
-        <div class="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-900 via-red-600 to-yellow-500"></div>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-900 via-red-600 to-yellow-500"></div>
 
-            <div class="flex items-center justify-between mb-5 border-b border-slate-100 pb-3">
+            <div class="flex items-center justify-between mb-5 border-b border-slate-100 pb-4">
                 <h2 class="text-xs font-extrabold text-blue-950 uppercase tracking-wider flex items-center gap-2">
-                    <span class="p-1.5 bg-red-50 text-red-600 rounded-md">
+                    <span class="p-2 bg-red-50 text-red-600 rounded-lg">
                         <i data-lucide="filter" class="w-4 h-4"></i>
                     </span>
                     Filtros Globais de Pesquisa
                 </h2>
 
-                <button id="btnClearFilters" class="text-xs text-slate-500 hover:text-red-600 font-semibold transition-colors flex items-center gap-1.5 bg-slate-50 hover:bg-red-50 px-3 py-1.5 rounded-lg border border-slate-200 hover:border-red-200">
+                <button id="btnClearFilters" class="text-xs text-slate-600 hover:text-red-600 font-bold transition-all flex items-center gap-1.5 bg-slate-100 hover:bg-red-50 px-3.5 py-2 rounded-xl border border-slate-200 hover:border-red-200 active:scale-95">
                     <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
                     Limpar Filtros
                 </button>
@@ -157,43 +172,43 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5">NTE (Coluna A)</label>
-                    <select id="filterNTE" class="w-full text-xs bg-slate-50 border-slate-300 rounded-lg p-2.5 border focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all">
+                    <label class="block text-xs font-bold text-slate-600 mb-2">NTE (Coluna A)</label>
+                    <select id="filterNTE" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
                         <option value="">Todos os NTEs</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Município</label>
-                    <select id="filterMunicipio" class="w-full text-xs bg-slate-50 border-slate-300 rounded-lg p-2.5 border focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all">
+                    <label class="block text-xs font-bold text-slate-600 mb-2">Município</label>
+                    <select id="filterMunicipio" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
                         <option value="">Todos os Municípios</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Unidade Escolar (Col. E)</label>
-                    <select id="filterUnidade" class="w-full text-xs bg-slate-50 border-slate-300 rounded-lg p-2.5 border focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all">
+                    <label class="block text-xs font-bold text-slate-600 mb-2">Unidade Escolar (Col. E)</label>
+                    <select id="filterUnidade" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
                         <option value="">Todas as Unidades</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Cargo / Função</label>
-                    <select id="filterCargo" class="w-full text-xs bg-slate-50 border-slate-300 rounded-lg p-2.5 border focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all">
+                    <label class="block text-xs font-bold text-slate-600 mb-2">Cargo / Função</label>
+                    <select id="filterCargo" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
                         <option value="">Todos os Cargos</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Modalidade</label>
-                    <select id="filterModalidade" class="w-full text-xs bg-slate-50 border-slate-300 rounded-lg p-2.5 border focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all">
+                    <label class="block text-xs font-bold text-slate-600 mb-2">Modalidade</label>
+                    <select id="filterModalidade" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
                         <option value="">Todas as Modalidades</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Situação Escolar (Col. F)</label>
-                    <select id="filterFolha" class="w-full text-xs bg-slate-50 border-slate-300 rounded-lg p-2.5 border focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all">
+                    <label class="block text-xs font-bold text-slate-600 mb-2">Situação Escolar</label>
+                    <select id="filterFolha" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
                         <option value="">Todas as Situações</option>
                     </select>
                 </div>
@@ -202,7 +217,7 @@
         </div>
 
         <!-- Consulta Individual -->
-        <div class="bg-gradient-to-br from-slate-900 to-blue-950 p-6 rounded-xl text-white shadow-xl border-l-4 border-yellow-400 relative">
+        <div class="bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 p-6 sm:p-8 rounded-2xl text-white shadow-xl border-l-4 border-yellow-400 relative">
 
             <label class="block text-xs font-extrabold uppercase tracking-wider mb-3 flex items-center gap-2 text-yellow-400">
                 <i data-lucide="user-search" class="w-5 h-5"></i>
@@ -211,74 +226,74 @@
 
             <div class="flex flex-col sm:flex-row gap-3">
                 <div class="relative flex-1">
-                    <input type="text" id="searchIndividualInput" placeholder="Digite o CPF ou a Matrícula (Nº pessoal) para ver o painel completo..." class="w-full text-sm p-3 pl-4 rounded-lg text-slate-900 border border-slate-700 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/30 outline-none shadow-inner bg-white placeholder:text-slate-400 font-medium">
+                    <input type="text" id="searchIndividualInput" placeholder="Digite o CPF ou a Matrícula (Nº pessoal) para ver o painel completo..." class="w-full text-sm p-3.5 pl-4 rounded-xl text-slate-900 border border-slate-700 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/30 outline-none shadow-inner bg-white placeholder:text-slate-400 font-medium">
                 </div>
 
-                <button id="btnSearchIndividual" class="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-blue-950 font-bold px-7 py-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2 shadow-lg active:scale-95">
+                <button id="btnSearchIndividual" class="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-blue-950 font-bold px-8 py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg active:scale-95">
                     <i data-lucide="search" class="w-4 h-4"></i>
                     Consultar
                 </button>
             </div>
 
             <!-- Painel de Detalhes -->
-            <div id="individualPanel" class="hidden mt-6 bg-white text-slate-800 rounded-xl p-6 border border-slate-200 shadow-2xl space-y-5 animate-in fade-in duration-200">
+            <div id="individualPanel" class="hidden mt-6 bg-white text-slate-800 rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-6 animate-in fade-in duration-200">
 
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-3">
-                    <h3 id="indNomeServidor" class="text-lg font-extrabold text-blue-950 flex items-center gap-2">
-                        <i data-lucide="user-check" class="w-5 h-5 text-blue-900"></i>
+                    <h3 id="indNomeServidor" class="text-lg sm:text-xl font-extrabold text-blue-950 flex items-center gap-2.5">
+                        <i data-lucide="user-check" class="w-6 h-6 text-blue-900"></i>
                         Nome do Servidor
                     </h3>
-                    <span id="indStatusFolhaBadge" class="px-3 py-1 rounded-full text-xs font-bold shadow-sm">Situação Escolar</span>
+                    <span id="indStatusFolhaBadge" class="px-4 py-1.5 rounded-full text-xs font-bold shadow-sm">Situação Escolar</span>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
 
-                    <div class="bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/70">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
                         <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">NTE (Coluna A)</span>
                         <span id="indNTE" class="font-extrabold text-blue-950 text-sm">-</span>
                     </div>
 
-                    <div class="bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/70">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
                         <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Município</span>
                         <span id="indMunicipio" class="font-extrabold text-blue-950 text-sm">-</span>
                     </div>
 
-                    <div class="bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/70 lg:col-span-2">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 lg:col-span-2">
                         <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Unidade Escolar (Col. E c/ Cód. D)</span>
                         <span id="indUnidade" class="font-extrabold text-blue-950 text-sm leading-tight block">-</span>
                     </div>
 
-                    <div class="bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/70">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
                         <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Cargo / Função</span>
                         <span id="indCargo" class="font-bold text-blue-950 text-sm">-</span>
                     </div>
 
-                    <div class="bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/70">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
                         <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Modalidade</span>
                         <span id="indModalidade" class="font-bold text-blue-950 text-sm">-</span>
                     </div>
 
-                    <div class="bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/70">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
                         <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Data de Admissão</span>
                         <span id="indAdmissao" class="font-bold text-emerald-700 text-sm">-</span>
                     </div>
 
-                    <div class="bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/70">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
                         <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Fim do Contrato</span>
                         <span id="indFimContrato" class="font-bold text-red-700 text-sm">-</span>
                     </div>
 
-                    <div class="bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/70">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
                         <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">CPF</span>
                         <span id="indCPF" class="font-mono font-bold text-slate-800 text-sm">-</span>
                     </div>
 
-                    <div class="bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/70">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
                         <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Contatos (Tel / Cel / E-mail)</span>
                         <span id="indTelefone" class="font-mono font-bold text-slate-800 text-xs">-</span>
                     </div>
 
-                    <div class="bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/70">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
                         <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Matrícula (Nº Pessoal)</span>
                         <span id="indMatricula" class="font-mono font-bold text-slate-800 text-sm">-</span>
                     </div>
@@ -286,7 +301,7 @@
                 </div>
             </div>
 
-            <p id="individualNotFound" class="hidden text-xs text-amber-300 font-semibold mt-3 flex items-center gap-1.5 bg-amber-950/40 p-2.5 rounded-lg border border-amber-800/40">
+            <p id="individualNotFound" class="hidden text-xs text-amber-300 font-semibold mt-4 flex items-center gap-2 bg-amber-950/40 p-3 rounded-xl border border-amber-800/40">
                 <i data-lucide="alert-circle" class="w-4 h-4"></i>
                 Nenhum servidor encontrado com este CPF ou Matrícula.
             </p>
@@ -295,7 +310,7 @@
         <!-- Gráficos -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-            <div class="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
                 <h3 class="text-xs font-extrabold text-blue-950 uppercase tracking-wider mb-4 border-b border-slate-100 pb-3 flex items-center gap-2">
                     <i data-lucide="bar-chart-3" class="w-4 h-4 text-blue-900"></i>
                     Top 10 Quantitativo por Cargo
@@ -305,7 +320,7 @@
                 </div>
             </div>
 
-            <div class="bg-white p-6 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
                 <h3 class="text-xs font-extrabold text-blue-950 uppercase tracking-wider mb-4 border-b border-slate-100 pb-3 flex items-center gap-2">
                     <i data-lucide="pie-chart" class="w-4 h-4 text-blue-900"></i>
                     Distribuição de REDA por NTE (Sede)
@@ -318,7 +333,7 @@
         </div>
 
         <!-- Tabela Detalhada -->
-        <div id="detailedSection" class="hidden bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div id="detailedSection" class="hidden bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
 
             <div class="p-5 bg-slate-50 border-b border-slate-200/80 flex flex-col md:flex-row justify-between items-center gap-3">
                 <h3 class="text-xs font-extrabold text-blue-950 uppercase tracking-wider flex items-center gap-2">
@@ -327,12 +342,12 @@
                 </h3>
 
                 <div class="flex items-center gap-3">
-                    <button id="btnExportExcel" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3.5 py-1.5 rounded-lg text-xs transition-all flex items-center gap-1.5 shadow-sm hover:shadow active:scale-95">
-                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                    <button id="btnExportExcel" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all flex items-center gap-2 shadow-sm hover:shadow active:scale-95">
+                        <i data-lucide="download" class="w-4 h-4"></i>
                         Exportar Excel (.xlsx)
                     </button>
 
-                    <span id="recordCount" class="text-xs font-bold text-blue-900 bg-blue-100/70 border border-blue-200 px-3 py-1 rounded-full">
+                    <span id="recordCount" class="text-xs font-bold text-blue-900 bg-blue-100/70 border border-blue-200 px-3.5 py-1.5 rounded-full">
                         0 registros encontrados
                     </span>
                 </div>
@@ -345,12 +360,12 @@
                         <tr>
                             <th class="px-4 py-3.5">Matrícula</th>
                             <th class="px-4 py-3.5">Nome do Empregado</th>
-                            <th class="px-4 py-3.5">Situação Escolar (Col. F)</th>
+                            <th class="px-4 py-3.5">Situação Escolar</th>
                             <th class="px-4 py-3.5">Cargo / Função</th>
                             <th class="px-4 py-3.5">Modalidade</th>
-                            <th class="px-4 py-3.5">Unidade Escolar (Col. E)</th>
+                            <th class="px-4 py-3.5">Unidade Escolar</th>
                             <th class="px-4 py-3.5">Município</th>
-                            <th class="px-4 py-3.5">NTE (Col. A)</th>
+                            <th class="px-4 py-3.5">NTE</th>
                             <th class="px-4 py-3.5">Admissão</th>
                             <th class="px-4 py-3.5">Fim do Contrato</th>
                         </tr>
@@ -363,6 +378,29 @@
         </div>
 
     </main>
+</div>
+
+<!-- Modal de Autenticação do Administrador -->
+<div id="admModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in zoom-in-95 duration-150">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+            <h3 class="text-sm font-extrabold text-blue-950 flex items-center gap-2">
+                <i data-lucide="shield-alert" class="w-4 h-4 text-yellow-600"></i>
+                Identificação do Administrador
+            </h3>
+            <button id="btnCloseAdmModal" class="text-slate-400 hover:text-slate-700">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <p class="text-xs text-slate-600">Insira a senha de administrador para liberar a limpeza de dados da nuvem/sistema:</p>
+        <div>
+            <input type="password" id="admPasswordInput" placeholder="Senha de acesso..." class="w-full text-xs p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-900 outline-none">
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+            <button id="btnCloseAdmModalCancel" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">Cancelar</button>
+            <button id="btnConfirmAdmLogin" class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-800 rounded-xl shadow">Entrar como ADM</button>
+        </div>
+    </div>
 </div>
 
 <footer class="bg-slate-900 text-slate-400 text-xs py-6 text-center border-t border-slate-800 mt-12">
@@ -382,82 +420,104 @@ lucide.createIcons();
 let rawData = [];
 let chartCargosInstance = null;
 let chartNTEInstance = null;
+let isAdminLoggedIn = false;
 
-// Função robusta de sanitização para o Firebase Realtime Database
-function sanitizeKeys(obj) {
-    if (obj === null || typeof obj !== 'object') {
-        return obj;
+// Controle do Modal ADM
+const admModal = document.getElementById('admModal');
+document.getElementById('btnOpenAdmModal').addEventListener('click', () => {
+    if (isAdminLoggedIn) {
+        if (confirm('Deseja encerrar a sessão de Administrador?')) {
+            isAdminLoggedIn = false;
+            document.getElementById('btnClearCloud').classList.add('hidden');
+            document.getElementById('btnOpenAdmModal').innerHTML = '<i data-lucide="lock" class="w-4 h-4"></i><span>ÁREA ADM</span>';
+            document.getElementById('btnOpenAdmModal').className = 'bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-lg active:scale-95';
+            lucide.createIcons();
+            alert('Sessão de ADM encerrada.');
+        }
+    } else {
+        admModal.classList.remove('hidden');
+        document.getElementById('admPasswordInput').value = '';
+        document.getElementById('admPasswordInput').focus();
     }
+});
 
-    if (Array.isArray(obj)) {
-        return obj.map(item => sanitizeKeys(item));
+document.getElementById('btnCloseAdmModal').addEventListener('click', () => admModal.classList.add('hidden'));
+document.getElementById('btnCloseAdmModalCancel').addEventListener('click', () => admModal.classList.add('hidden'));
+
+document.getElementById('btnConfirmAdmLogin').addEventListener('click', () => {
+    const pass = document.getElementById('admPasswordInput').value;
+    if (pass === 'admin123' || pass === 'secba2026') {
+        isAdminLoggedIn = true;
+        admModal.classList.add('hidden');
+        document.getElementById('btnClearCloud').classList.remove('hidden');
+        document.getElementById('btnOpenAdmModal').innerHTML = '<i data-lucide="unlock" class="w-4 h-4"></i><span>ADM ATIVO</span>';
+        document.getElementById('btnOpenAdmModal').className = 'bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-lg active:scale-95';
+        lucide.createIcons();
+        alert('Autenticado com sucesso como Administrador!');
+    } else {
+        alert('Senha incorreta!');
     }
+});
 
-    const sanitized = {};
-    Object.keys(obj).forEach(key => {
-        const cleanKey = key.replace(/[.#$\[\]/]/g, '_').trim();
-        sanitized[cleanKey] = sanitizeKeys(obj[key]);
+function cleanAndNormalizeData(jsonRows) {
+    return jsonRows.map(row => {
+        const keys = Object.keys(row);
+
+        const getVal = (possibleNames, index) => {
+            for (let name of possibleNames) {
+                const foundKey = keys.find(k => k.replace(/[\s\xa0]+/g, ' ').trim().toLowerCase() === name.toLowerCase());
+                if (foundKey && row[foundKey] !== undefined && row[foundKey] !== null && String(row[foundKey]).trim() !== '') {
+                    return String(row[foundKey]).replace(/[\s\xa0]+/g, ' ').trim();
+                }
+            }
+            if (keys[index] !== undefined && row[keys[index]] !== undefined) {
+                return String(row[keys[index]]).replace(/[\s\xa0]+/g, ' ').trim();
+            }
+            return '';
+        };
+
+        const nte = getVal(['NTE', 'NTE (SEDE)', 'SEDE'], 0);
+        const municipio = getVal(['Município', 'Municipio'], 1);
+        const codsec = getVal(['Codsec', 'Cod. SEC'], 3);
+        const unidadeOrg = getVal(['Unid organizacional', 'UNIDADE ESCOLAR', 'Unidade Organizacional'], 4);
+        const situacaoEscolar = getVal(['SITUAÇÃO ESCOLAR', 'Situação Escolar', 'Situação Folha'], 5);
+        const numPessoal = getVal(['Nº pessoal', 'Matrícula', 'N_ pessoal'], 6);
+        const nomeEmpregado = getVal(['Nome do empregado', 'Nome'], 7);
+        const admissao = getVal(['ADMISSÃO', 'Admissão', 'Admissao'], 8);
+        const fimContrato = getVal(['Fim contrato', 'Fim Contrato'], 9);
+        const cpf = getVal(['CPF'], 10);
+        const telefone = getVal(['TELEFONE', 'Telefone'], 11);
+        const celular = getVal(['CELULAR', 'Celular'], 12);
+        const email = getVal(['EMAIL', 'E-mail', 'Email'], 13);
+        const cargo = getVal(['Cargo', 'CARGO'], 14);
+        const modalidade = getVal(['Modalidade', 'MODALIDADE'], 15);
+
+        let unidadeCompleta = unidadeOrg || '-';
+        if (codsec && codsec !== 'nan' && codsec !== '-') {
+            unidadeCompleta += ` (Codsec: ${codsec})`;
+        }
+
+        return {
+            'NTE': nte || '-',
+            'Município': municipio || '-',
+            'Unid organizacional': unidadeCompleta,
+            'SITUAÇÃO ESCOLAR': situacaoEscolar || '-',
+            'Nº pessoal': numPessoal || '-',
+            'Nome do empregado': nomeEmpregado || '-',
+            'ADMISSÃO': admissao || '-',
+            'Fim contrato': fimContrato || '-',
+            'CPF': cpf || '-',
+            'TELEFONE': telefone,
+            'CELULAR': celular,
+            'EMAIL': email,
+            'Cargo': cargo || '-',
+            'Modalidade': modalidade || '-'
+        };
     });
-
-    return sanitized;
-}
-
-// Funções de leitura indexada exata pelas colunas da planilha enxuta
-function getNTE(row) {
-    const keys = Object.keys(row);
-    // Coluna A (primeira coluna - índice 0)
-    return row[keys[0]] || '-';
-}
-
-function getUnidadeEscolar(row) {
-    const keys = Object.keys(row);
-    // Coluna E (Unid organizacional - índice 4) e Coluna D (Codsec - índice 3)
-    const desc = row[keys[4]] || '-';
-    const codsec = row[keys[3]] || '';
-    
-    let info = desc;
-    if (codsec && String(codsec).trim() !== '') {
-        info += ` (Codsec: ${codsec})`;
-    }
-    return info;
-}
-
-function getSituacaoFolha(row) {
-    const keys = Object.keys(row);
-    // Coluna F (SITUAÇÃO ESCOLAR - índice 5)
-    return row[keys[5]] || '-';
-}
-
-function getAdmissaoVal(row) {
-    const keys = Object.keys(row);
-    // Coluna I (ADMISSÃO - índice 8)
-    return row[keys[8]] || '';
-}
-
-function getFimContratoVal(row) {
-    const keys = Object.keys(row);
-    // Coluna J (Fim contrato - índice 9)
-    return row[keys[9]] || '';
-}
-
-function getTelefones(row) {
-    const keys = Object.keys(row);
-    const tel = row[keys[11]] || '';
-    const cel = row[keys[12]] || '';
-    const email = row[keys[13]] || '';
-    
-    const arrayInfo = [tel, cel, email].filter(Boolean);
-    return arrayInfo.length > 0 ? arrayInfo.join(' | ') : '-';
-}
-
-function getModalidade(row) {
-    const keys = Object.keys(row);
-    // Coluna P (Modalidade - índice 15)
-    return row[keys[15]] || row['Modalidade'] || '-';
 }
 
 function formatDateBR(val) {
-    if (!val) return '-';
+    if (!val || val === '-') return '-';
 
     if (val instanceof Date && !isNaN(val)) {
         return `${String(val.getDate()).padStart(2, '0')}/${String(val.getMonth() + 1).padStart(2, '0')}/${val.getFullYear()}`;
@@ -471,9 +531,6 @@ function formatDateBR(val) {
     }
 
     let strVal = String(val).trim();
-
-    if (!strVal || strVal === 'undefined' || strVal === 'null') return '-';
-
     if (strVal.includes('T')) strVal = strVal.split('T')[0];
 
     if (strVal.includes('-')) {
@@ -489,11 +546,9 @@ function formatDateBR(val) {
             let p1 = parseInt(parts[0], 10);
             let p2 = parseInt(parts[1], 10);
             let p3 = parts[2];
-
             if (p1 <= 12 && p2 > 12) {
                 return `${String(p2).padStart(2, '0')}/${String(p1).padStart(2, '0')}/${p3}`;
             }
-
             return `${String(p1).padStart(2, '0')}/${String(p2).padStart(2, '0')}/${p3}`;
         }
     }
@@ -501,7 +556,6 @@ function formatDateBR(val) {
     return strVal;
 }
 
-// Leitura do Excel
 document.getElementById('excelFile').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -520,29 +574,25 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
             const firstSheet = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheet];
 
-            let tempRawData = XLSX.utils.sheet_to_json(worksheet, {
+            let tempJson = XLSX.utils.sheet_to_json(worksheet, {
                 raw: false,
                 dateNF: 'dd/mm/yyyy'
             });
 
-            rawData = sanitizeKeys(tempRawData);
+            rawData = cleanAndNormalizeData(tempJson);
 
             const now = new Date();
-
             const updateInfo = {
                 fileName: file.name,
                 date: now.toLocaleDateString('pt-BR') + ' às ' +
-                    now.toLocaleTimeString('pt-BR', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    }),
+                    now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
                 data: rawData
             };
 
             try {
                 localStorage.setItem('reda_cache', JSON.stringify(updateInfo));
             } catch (err) {
-                console.warn('Arquivo muito grande para persistência local completa.', err);
+                console.warn('Cache local excedido.', err);
             }
 
             displayUpdateInfo(file.name, updateInfo.date);
@@ -558,28 +608,51 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
     reader.readAsArrayBuffer(file);
 });
 
+document.getElementById('btnClearCloud').addEventListener('click', function() {
+    if (!isAdminLoggedIn) {
+        alert('Acesso negado. Apenas o Administrador pode limpar os dados.');
+        return;
+    }
+
+    if (confirm('Tem certeza que deseja limpar todos os dados carregados na nuvem e no navegador?')) {
+        localStorage.removeItem('reda_cache');
+        rawData = [];
+        
+        document.getElementById('fileName').innerText = 'Nenhuma planilha carregada';
+        document.getElementById('lastUpdateLabel').innerHTML = '<i data-lucide="clock" class="w-3.5 h-3.5"></i> Aguardando dados...';
+        
+        ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => {
+            document.getElementById(id).innerHTML = '<option value="">Todos os itens</option>';
+        });
+
+        document.getElementById('detailedSection').classList.add('hidden');
+        document.getElementById('individualPanel').classList.add('hidden');
+        document.getElementById('searchIndividualInput').value = '';
+
+        updateKPIs([]);
+        renderCharts([]);
+        lucide.createIcons();
+        alert('Dados limpos com sucesso!');
+    }
+});
+
 function displayUpdateInfo(name, dateStr) {
     document.getElementById('fileName').innerText = name;
-    document.getElementById('lastUpdateLabel').innerHTML = `<i data-lucide="clock" class="w-3 h-3"></i> Última atualização: ${dateStr}`;
+    document.getElementById('lastUpdateLabel').innerHTML = `<i data-lucide="clock" class="w-3.5 h-3.5"></i> Atualizado: ${dateStr}`;
     lucide.createIcons();
 }
 
-// Inicialização
 window.addEventListener('DOMContentLoaded', () => {
     const cached = localStorage.getItem('reda_cache');
-
     if (cached) {
         try {
             const parsed = JSON.parse(cached);
             rawData = parsed.data || [];
-
             if (parsed.fileName && parsed.date) {
                 displayUpdateInfo(parsed.fileName, parsed.date);
             }
-
             populateFilters();
             applyFilters();
-
         } catch (e) {
             console.error('Erro ao carregar cache salvo', e);
         }
@@ -601,121 +674,76 @@ function populateFilters() {
     const selectedMod = modSelect.value;
     const selectedFolha = folhaSelect.value;
 
-    const ntes = [...new Set(rawData.map(item => getNTE(item)).filter(Boolean))].sort();
+    const ntes = [...new Set(rawData.map(item => item['NTE']).filter(v => v && v !== '-'))].sort();
     fillSelect('filterNTE', ntes, selectedNTE);
 
     let dataForMun = rawData;
-    if (selectedNTE) {
-        dataForMun = rawData.filter(item => getNTE(item) === selectedNTE);
-    }
-    const municipios = [...new Set(dataForMun.map(item => item['Município']).filter(Boolean))].sort();
+    if (selectedNTE) dataForMun = rawData.filter(item => item['NTE'] === selectedNTE);
+    const municipios = [...new Set(dataForMun.map(item => item['Município']).filter(v => v && v !== '-'))].sort();
     fillSelect('filterMunicipio', municipios, municipios.includes(selectedMun) ? selectedMun : "");
 
     let dataForUnid = dataForMun;
-    if (selectedMun) {
-        dataForUnid = dataForMun.filter(item => item['Município'] === selectedMun);
-    }
-    const unidades = [...new Set(dataForUnid.map(item => getUnidadeEscolar(item)).filter(v => v !== '-'))].sort();
+    if (selectedMun) dataForUnid = dataForMun.filter(item => item['Município'] === selectedMun);
+    const unidades = [...new Set(dataForUnid.map(item => item['Unid organizacional']).filter(v => v && v !== '-'))].sort();
     fillSelect('filterUnidade', unidades, unidades.includes(selectedUnid) ? selectedUnid : "");
 
     let dataForCargo = dataForUnid;
-    if (selectedUnid) {
-        dataForCargo = dataForUnid.filter(item => getUnidadeEscolar(item) === selectedUnid);
-    }
-    const cargos = [...new Set(dataForCargo.map(item => item['Cargo']).filter(Boolean))].sort();
+    if (selectedUnid) dataForCargo = dataForUnid.filter(item => item['Unid organizacional'] === selectedUnid);
+    const cargos = [...new Set(dataForCargo.map(item => item['Cargo']).filter(v => v && v !== '-'))].sort();
     fillSelect('filterCargo', cargos, cargos.includes(selectedCargo) ? selectedCargo : "");
 
     let dataForMod = dataForCargo;
-    if (selectedCargo) {
-        dataForMod = dataForCargo.filter(item => item['Cargo'] === selectedCargo);
-    }
-    const modalidades = [...new Set(dataForMod.map(item => getModalidade(item)).filter(v => v !== '-'))].sort();
+    if (selectedCargo) dataForMod = dataForCargo.filter(item => item['Cargo'] === selectedCargo);
+    const modalidades = [...new Set(dataForMod.map(item => item['Modalidade']).filter(v => v && v !== '-'))].sort();
     fillSelect('filterModalidade', modalidades, modalidades.includes(selectedMod) ? selectedMod : "");
 
     let dataForFolha = dataForMod;
-    if (selectedMod) {
-        dataForFolha = dataForMod.filter(item => getModalidade(item) === selectedMod);
-    }
-    const folhas = [...new Set(dataForFolha.map(item => getSituacaoFolha(item)).filter(v => v !== '-'))].sort();
+    if (selectedMod) dataForFolha = dataForMod.filter(item => item['Modalidade'] === selectedMod);
+    const folhas = [...new Set(dataForFolha.map(item => item['SITUAÇÃO ESCOLAR']).filter(v => v && v !== '-'))].sort();
     fillSelect('filterFolha', folhas, folhas.includes(selectedFolha) ? selectedFolha : "");
 }
 
 function fillSelect(elementId, items, selectedValue = "") {
     const select = document.getElementById(elementId);
-    const defaultOptionText = select.options[0].text;
-
+    const defaultOptionText = select.options[0] ? select.options[0].text : "Selecione";
     select.innerHTML = `<option value="">${defaultOptionText}</option>`;
-
     items.forEach(item => {
         const option = document.createElement('option');
         option.value = item;
         option.textContent = item;
-
         if (item === selectedValue) option.selected = true;
-
         select.appendChild(option);
     });
 }
 
 document.getElementById('filterNTE').addEventListener('change', () => {
-    document.getElementById('filterMunicipio').value = "";
-    document.getElementById('filterUnidade').value = "";
-    document.getElementById('filterCargo').value = "";
-    document.getElementById('filterModalidade').value = "";
-    document.getElementById('filterFolha').value = "";
-
-    populateFilters();
-    applyFilters();
+    ['filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => document.getElementById(id).value = "");
+    populateFilters(); applyFilters();
 });
-
 document.getElementById('filterMunicipio').addEventListener('change', () => {
-    document.getElementById('filterUnidade').value = "";
-    document.getElementById('filterCargo').value = "";
-    document.getElementById('filterModalidade').value = "";
-    document.getElementById('filterFolha').value = "";
-
-    populateFilters();
-    applyFilters();
+    ['filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => document.getElementById(id).value = "");
+    populateFilters(); applyFilters();
 });
-
 document.getElementById('filterUnidade').addEventListener('change', () => {
-    document.getElementById('filterCargo').value = "";
-    document.getElementById('filterModalidade').value = "";
-    document.getElementById('filterFolha').value = "";
-
-    populateFilters();
-    applyFilters();
+    ['filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => document.getElementById(id).value = "");
+    populateFilters(); applyFilters();
 });
-
 document.getElementById('filterCargo').addEventListener('change', () => {
-    document.getElementById('filterModalidade').value = "";
-    document.getElementById('filterFolha').value = "";
-
-    populateFilters();
-    applyFilters();
+    ['filterModalidade', 'filterFolha'].forEach(id => document.getElementById(id).value = "");
+    populateFilters(); applyFilters();
 });
-
 document.getElementById('filterModalidade').addEventListener('change', () => {
     document.getElementById('filterFolha').value = "";
-
-    populateFilters();
-    applyFilters();
+    populateFilters(); applyFilters();
 });
-
-document.getElementById('filterFolha').addEventListener('change', () => {
-    applyFilters();
-});
+document.getElementById('filterFolha').addEventListener('change', () => applyFilters());
 
 document.getElementById('btnClearFilters').addEventListener('click', () => {
-    ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha']
-        .forEach(id => document.getElementById(id).value = "");
-
-    populateFilters();
-    applyFilters();
+    ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => document.getElementById(id).value = "");
+    populateFilters(); applyFilters();
 });
 
 document.getElementById('btnSearchIndividual').addEventListener('click', executeIndividualSearch);
-
 document.getElementById('searchIndividualInput').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') executeIndividualSearch();
 });
@@ -726,16 +754,12 @@ function executeIndividualSearch() {
     const notFound = document.getElementById('individualNotFound');
 
     if (!query) {
-        panel.classList.add('hidden');
-        notFound.classList.add('hidden');
-        return;
+        panel.classList.add('hidden'); notFound.classList.add('hidden'); return;
     }
 
     const found = rawData.find(item => {
-        const keys = Object.keys(item);
-        const cpf = String(item[keys[10]] || '').toLowerCase();
-        const matricula = String(item[keys[6]] || '').toLowerCase();
-
+        const cpf = String(item['CPF'] || '').toLowerCase();
+        const matricula = String(item['Nº pessoal'] || '').toLowerCase();
         return cpf.includes(query) || matricula.includes(query);
     });
 
@@ -743,41 +767,37 @@ function executeIndividualSearch() {
         notFound.classList.add('hidden');
         panel.classList.remove('hidden');
 
-        const keys = Object.keys(found);
         document.getElementById('indNomeServidor').innerHTML =
-            `<i data-lucide="user-check" class="w-5 h-5 text-blue-900"></i> ${found[keys[7]] || 'Não Informado'}`;
+            `<i data-lucide="user-check" class="w-6 h-6 text-blue-900"></i> ${found['Nome do empregado']}`;
 
-        document.getElementById('indNTE').innerText = getNTE(found);
-        document.getElementById('indMunicipio').innerText = found[keys[1]] || '-';
-        document.getElementById('indUnidade').innerText = getUnidadeEscolar(found);
-        document.getElementById('indCargo').innerText = found[keys[14]] || '-';
-        document.getElementById('indModalidade').innerText = getModalidade(found);
+        document.getElementById('indNTE').innerText = found['NTE'];
+        document.getElementById('indMunicipio').innerText = found['Município'];
+        document.getElementById('indUnidade').innerText = found['Unid organizacional'];
+        document.getElementById('indCargo').innerText = found['Cargo'];
+        document.getElementById('indModalidade').innerText = found['Modalidade'];
 
-        document.getElementById('indAdmissao').innerText = formatDateBR(getAdmissaoVal(found));
-        document.getElementById('indFimContrato').innerText = formatDateBR(getFimContratoVal(found));
+        document.getElementById('indAdmissao').innerText = formatDateBR(found['ADMISSÃO']);
+        document.getElementById('indFimContrato').innerText = formatDateBR(found['Fim contrato']);
 
-        document.getElementById('indCPF').innerText = found[keys[10]] || '-';
-        document.getElementById('indTelefone').innerText = getTelefones(found);
-        document.getElementById('indMatricula').innerText = found[keys[6]] || '-';
+        document.getElementById('indCPF').innerText = found['CPF'];
+        
+        const telInfo = [found['TELEFONE'], found['CELULAR'], found['EMAIL']].filter(v => v && v !== 'nan' && v !== '-').join(' | ');
+        document.getElementById('indTelefone').innerText = telInfo || '-';
+        document.getElementById('indMatricula').innerText = found['Nº pessoal'];
 
-        const sitFolha = getSituacaoFolha(found);
+        const sitFolha = found['SITUAÇÃO ESCOLAR'];
         const badge = document.getElementById('indStatusFolhaBadge');
-
         badge.innerText = sitFolha;
-
         const sitUpper = String(sitFolha).toUpperCase();
 
         if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE')) {
-            badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+            badge.className = "px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
         } else {
-            badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300";
+            badge.className = "px-4 py-1.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300";
         }
-
         lucide.createIcons();
-
     } else {
-        panel.classList.add('hidden');
-        notFound.classList.remove('hidden');
+        panel.classList.add('hidden'); notFound.classList.remove('hidden');
         lucide.createIcons();
     }
 }
@@ -791,35 +811,24 @@ function getFilteredData() {
     const folhaVal = document.getElementById('filterFolha').value;
 
     return rawData.filter(item => {
-        const keys = Object.keys(item);
-        const matchNTE = !nteVal || getNTE(item) === nteVal;
-        const matchMun = !munVal || item[keys[1]] === munVal;
-        const matchUnid = !unidVal || getUnidadeEscolar(item) === unidVal;
-        const matchCargo = !cargoVal || item[keys[14]] === cargoVal;
-        const matchMod = !modVal || getModalidade(item) === modVal;
-        const matchFolha = !folhaVal || getSituacaoFolha(item) === folhaVal;
-
-        return matchNTE && matchMun && matchUnid && matchCargo && matchMod && matchFolha;
+        return (!nteVal || item['NTE'] === nteVal) &&
+               (!munVal || item['Município'] === munVal) &&
+               (!unidVal || item['Unid organizacional'] === unidVal) &&
+               (!cargoVal || item['Cargo'] === cargoVal) &&
+               (!modVal || item['Modalidade'] === modVal) &&
+               (!folhaVal || item['SITUAÇÃO ESCOLAR'] === folhaVal);
     });
 }
 
 function applyFilters() {
-    const nteVal = document.getElementById('filterNTE').value;
-    const munVal = document.getElementById('filterMunicipio').value;
-    const unidVal = document.getElementById('filterUnidade').value;
-    const cargoVal = document.getElementById('filterCargo').value;
-    const modVal = document.getElementById('filterModalidade').value;
-    const folhaVal = document.getElementById('filterFolha').value;
-
-    const hasActiveFilter = nteVal || munVal || unidVal || cargoVal || modVal || folhaVal;
+    const hasActiveFilter = ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha']
+        .some(id => document.getElementById(id).value !== "");
 
     const filteredData = getFilteredData();
-
     updateKPIs(filteredData);
     renderCharts(filteredData);
 
     const detailedSection = document.getElementById('detailedSection');
-
     if (hasActiveFilter) {
         detailedSection.classList.remove('hidden');
         renderTable(filteredData);
@@ -830,34 +839,26 @@ function applyFilters() {
 
 document.getElementById('btnExportExcel').addEventListener('click', () => {
     const filteredData = getFilteredData();
+    if (filteredData.length === 0) { alert('Nenhum registro para exportar.'); return; }
 
-    if (filteredData.length === 0) {
-        alert('Nenhum registro para exportar.');
-        return;
-    }
-
-    const exportRows = filteredData.map(item => {
-        const keys = Object.keys(item);
-        return {
-            'Matrícula': item[keys[6]] || '-',
-            'Nome do Empregado': item[keys[7]] || '-',
-            'Situação Escolar': getSituacaoFolha(item),
-            'Cargo / Função': item[keys[14]] || '-',
-            'Modalidade': getModalidade(item),
-            'Unidade Organizacional': getUnidadeEscolar(item),
-            'Município': item[keys[1]] || '-',
-            'NTE': getNTE(item),
-            'Admissão': formatDateBR(getAdmissaoVal(item)),
-            'Fim do Contrato': formatDateBR(getFimContratoVal(item)),
-            'CPF': item[keys[10]] || '-',
-            'Contatos': getTelefones(item)
-        };
-    });
+    const exportRows = filteredData.map(item => ({
+        'Matrícula': item['Nº pessoal'],
+        'Nome do Empregado': item['Nome do empregado'],
+        'Situação Escolar': item['SITUAÇÃO ESCOLAR'],
+        'Cargo / Função': item['Cargo'],
+        'Modalidade': item['Modalidade'],
+        'Unidade Organizacional': item['Unid organizacional'],
+        'Município': item['Município'],
+        'NTE': item['NTE'],
+        'Admissão': formatDateBR(item['ADMISSÃO']),
+        'Fim do Contrato': formatDateBR(item['Fim contrato']),
+        'CPF': item['CPF'],
+        'E-mail/Telefone': [item['TELEFONE'], item['CELULAR'], item['EMAIL']].filter(Boolean).join(' | ')
+    }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportRows);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Resultado Consulta");
-
     XLSX.writeFile(workbook, `Consulta_REDA_SEC_${new Date().toISOString().slice(0, 10)}.xlsx`);
 });
 
@@ -865,131 +866,67 @@ function updateKPIs(data) {
     document.getElementById('kpiTotal').innerText = data.length.toLocaleString('pt-BR');
 
     const emFolhaCount = data.filter(i => {
-        const sit = String(getSituacaoFolha(i)).toUpperCase();
+        const sit = String(i['SITUAÇÃO ESCOLAR']).toUpperCase();
         return sit.includes('ATIVO') || sit.includes('SIM') || sit.includes('ATIVIDADE');
     }).length;
-
     document.getElementById('kpiEmFolha').innerText = emFolhaCount.toLocaleString('pt-BR');
 
-    const municipios = new Set(data.map(i => {
-        const keys = Object.keys(i);
-        return i[keys[1]];
-    }).filter(Boolean));
+    const municipios = new Set(data.map(i => i['Município']).filter(v => v && v !== '-'));
     document.getElementById('kpiMunicipios').innerText = municipios.size.toLocaleString('pt-BR');
 
-    const ntes = new Set(data.map(i => getNTE(i)).filter(Boolean));
+    const ntes = new Set(data.map(i => i['NTE']).filter(v => v && v !== '-'));
     document.getElementById('kpiNte').innerText = ntes.size.toLocaleString('pt-BR');
 }
 
 function renderCharts(data) {
     const cargoCounts = {};
-
     data.forEach(i => {
-        const keys = Object.keys(i);
-        const cargo = i[keys[14]] || 'Não Informado';
+        const cargo = i['Cargo'] || 'Não Informado';
         cargoCounts[cargo] = (cargoCounts[cargo] || 0) + 1;
     });
-
-    const topCargos = Object.entries(cargoCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10);
+    const topCargos = Object.entries(cargoCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
     if (chartCargosInstance) chartCargosInstance.destroy();
-
     chartCargosInstance = new Chart(document.getElementById('chartCargos'), {
         type: 'bar',
         data: {
             labels: topCargos.map(c => c[0]),
             datasets: [{
-                label: 'Quantidade de Servidores',
                 data: topCargos.map(c => c[1]),
                 backgroundColor: '#1e3a8a',
-                borderRadius: 6,
-                barThickness: 'flex',
-                maxBarThickness: 38
+                borderRadius: 8
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                    titleFont: { size: 13, weight: 'bold' },
-                    bodyFont: { size: 12 },
-                    padding: 10,
-                    cornerRadius: 8
-                }
-            },
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
             scales: {
-                x: {
-                    grid: { display: false },
-                    ticks: {
-                        font: { size: 10, weight: '600' },
-                        color: '#475569',
-                        maxRotation: 35,
-                        minRotation: 35,
-                        autoSkip: false
-                    }
-                },
-                y: {
-                    grid: { color: '#f1f5f9' },
-                    ticks: { font: { size: 11 }, color: '#64748b' }
-                }
+                x: { ticks: { font: { size: 10 }, maxRotation: 35, minRotation: 35 } },
+                y: { ticks: { font: { size: 11 } } }
             }
         }
     });
 
     const nteCounts = {};
-
     data.forEach(i => {
-        const nte = getNTE(i);
+        const nte = i['NTE'] || 'Não Informado';
         nteCounts[nte] = (nteCounts[nte] || 0) + 1;
     });
-
-    const topNTEs = Object.entries(nteCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 8);
+    const topNTEs = Object.entries(nteCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
 
     if (chartNTEInstance) chartNTEInstance.destroy();
-
     chartNTEInstance = new Chart(document.getElementById('chartNTE'), {
         type: 'doughnut',
         data: {
             labels: topNTEs.map(n => n[0]),
             datasets: [{
                 data: topNTEs.map(n => n[1]),
-                backgroundColor: [
-                    '#1e3a8a', '#dc2626', '#0284c7', '#d97706',
-                    '#059669', '#7c3aed', '#db2777', '#475569'
-                ],
-                borderWidth: 2,
-                borderColor: '#ffffff'
+                backgroundColor: ['#1e3a8a', '#dc2626', '#0284c7', '#d97706', '#059669', '#7c3aed', '#db2777', '#475569']
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '65%',
-            plugins: {
-                legend: {
-                    position: 'right',
-                    labels: {
-                        boxWidth: 12,
-                        font: { size: 11, weight: '500' },
-                        color: '#334155',
-                        padding: 12
-                    }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                    titleFont: { size: 13, weight: 'bold' },
-                    bodyFont: { size: 12 },
-                    padding: 10,
-                    cornerRadius: 8
-                }
-            }
+            responsive: true, maintainAspectRatio: false, cutout: '65%',
+            plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } } }
         }
     });
 }
@@ -997,42 +934,35 @@ function renderCharts(data) {
 function renderTable(data) {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
-
-    document.getElementById('recordCount').innerText =
-        `Exibindo ${Math.min(100, data.length)} de ${data.length.toLocaleString('pt-BR')} registros`;
+    document.getElementById('recordCount').innerText = `Exibindo ${Math.min(100, data.length)} de ${data.length.toLocaleString('pt-BR')} registros`;
 
     data.slice(0, 100).forEach(row => {
-        const keys = Object.keys(row);
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50/80 border-b border-slate-100 transition-colors';
 
-        const situacaoFolha = getSituacaoFolha(row);
-        const sitUpper = String(situacaoFolha).toUpperCase();
-
-        let badgeFolha = `<span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[10px] font-semibold border border-slate-300">${situacaoFolha}</span>`;
-
+        const sit = row['SITUAÇÃO ESCOLAR'];
+        const sitUpper = String(sit).toUpperCase();
+        let badge = `<span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg text-[10px] font-semibold">${sit}</span>`;
         if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE')) {
-            badgeFolha = `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded text-[10px] font-bold">${situacaoFolha}</span>`;
+            badge = `<span class="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg text-[10px] font-bold">${sit}</span>`;
         } else if (sitUpper.includes('INATIVO') || sitUpper.includes('EXCLUIDO') || sitUpper.includes('NAO')) {
-            badgeFolha = `<span class="bg-red-100 text-red-800 border border-red-300 px-2 py-0.5 rounded text-[10px] font-bold">${situacaoFolha}</span>`;
+            badge = `<span class="bg-red-100 text-red-800 px-2.5 py-1 rounded-lg text-[10px] font-bold">${sit}</span>`;
         }
 
         tr.innerHTML = `
-            <td class="px-4 py-3 font-mono text-slate-800 font-bold">${row[keys[6]] || '-'}</td>
-            <td class="px-4 py-3 font-bold text-blue-950">${row[keys[7]] || '-'}</td>
-            <td class="px-4 py-3">${badgeFolha}</td>
-            <td class="px-4 py-3">${row[keys[14]] || '-'}</td>
-            <td class="px-4 py-3"><span class="bg-blue-50 text-blue-900 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-semibold">${getModalidade(row)}</span></td>
-            <td class="px-4 py-3">${getUnidadeEscolar(row)}</td>
-            <td class="px-4 py-3">${row[keys[1]] || '-'}</td>
-            <td class="px-4 py-3 font-semibold text-slate-800">${getNTE(row)}</td>
-            <td class="px-4 py-3 font-medium text-slate-700">${formatDateBR(getAdmissaoVal(row))}</td>
-            <td class="px-4 py-3 font-medium text-red-700">${formatDateBR(getFimContratoVal(row))}</td>
+            <td class="px-4 py-3.5 font-mono font-bold">${row['Nº pessoal']}</td>
+            <td class="px-4 py-3.5 font-bold text-blue-950">${row['Nome do empregado']}</td>
+            <td class="px-4 py-3.5">${badge}</td>
+            <td class="px-4 py-3.5">${row['Cargo']}</td>
+            <td class="px-4 py-3.5"><span class="bg-blue-50 text-blue-900 px-2.5 py-1 rounded-lg text-[10px] font-semibold">${row['Modalidade']}</span></td>
+            <td class="px-4 py-3.5">${row['Unid organizacional']}</td>
+            <td class="px-4 py-3.5">${row['Município']}</td>
+            <td class="px-4 py-3.5 font-semibold">${row['NTE']}</td>
+            <td class="px-4 py-3.5">${formatDateBR(row['ADMISSÃO'])}</td>
+            <td class="px-4 py-3.5 text-red-700 font-medium">${formatDateBR(row['Fim contrato'])}</td>
         `;
-
         tbody.appendChild(tr);
     });
-
     lucide.createIcons();
 }
 </script>
