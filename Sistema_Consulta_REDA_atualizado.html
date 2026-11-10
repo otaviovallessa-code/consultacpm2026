@@ -402,18 +402,18 @@ function sanitizeKeys(obj) {
     return sanitized;
 }
 
-// Funções de leitura direta das colunas exatas da planilha enxuta
+// Funções de leitura indexada exata pelas colunas da planilha enxuta
 function getNTE(row) {
     const keys = Object.keys(row);
-    // Coluna A (primeira coluna)
-    return row[keys[0]] || row['NTE'] || '-';
+    // Coluna A (primeira coluna - índice 0)
+    return row[keys[0]] || '-';
 }
 
 function getUnidadeEscolar(row) {
     const keys = Object.keys(row);
     // Coluna E (Unid organizacional - índice 4) e Coluna D (Codsec - índice 3)
-    const desc = row[keys[4]] || row['Unid organizacional'] || '-';
-    const codsec = row[keys[3]] || row['Codsec'] || '';
+    const desc = row[keys[4]] || '-';
+    const codsec = row[keys[3]] || '';
     
     let info = desc;
     if (codsec && String(codsec).trim() !== '') {
@@ -425,30 +425,35 @@ function getUnidadeEscolar(row) {
 function getSituacaoFolha(row) {
     const keys = Object.keys(row);
     // Coluna F (SITUAÇÃO ESCOLAR - índice 5)
-    return row[keys[5]] || row['SITUAÇÃO ESCOLAR'] || '-';
+    return row[keys[5]] || '-';
 }
 
 function getAdmissaoVal(row) {
     const keys = Object.keys(row);
-    return row[keys[8]] || row['ADMISSÃO'] || '';
+    // Coluna I (ADMISSÃO - índice 8)
+    return row[keys[8]] || '';
 }
 
 function getFimContratoVal(row) {
     const keys = Object.keys(row);
-    return row[keys[9]] || row['Fim contrato'] || '';
+    // Coluna J (Fim contrato - índice 9)
+    return row[keys[9]] || '';
 }
 
 function getTelefones(row) {
-    const tel = row['TELEFONE'] || '';
-    const cel = row['CELULAR'] || '';
-    const email = row['EMAIL'] || '';
+    const keys = Object.keys(row);
+    const tel = row[keys[11]] || '';
+    const cel = row[keys[12]] || '';
+    const email = row[keys[13]] || '';
     
     const arrayInfo = [tel, cel, email].filter(Boolean);
     return arrayInfo.length > 0 ? arrayInfo.join(' | ') : '-';
 }
 
 function getModalidade(row) {
-    return row['Modalidade'] || '-';
+    const keys = Object.keys(row);
+    // Coluna P (Modalidade - índice 15)
+    return row[keys[15]] || row['Modalidade'] || '-';
 }
 
 function formatDateBR(val) {
@@ -621,8 +626,8 @@ function populateFilters() {
     fillSelect('filterCargo', cargos, cargos.includes(selectedCargo) ? selectedCargo : "");
 
     let dataForMod = dataForCargo;
-    if (selectedUnid) {
-        dataForMod = dataForCargo.filter(item => getUnidadeEscolar(item) === selectedUnid);
+    if (selectedCargo) {
+        dataForMod = dataForCargo.filter(item => item['Cargo'] === selectedCargo);
     }
     const modalidades = [...new Set(dataForMod.map(item => getModalidade(item)).filter(v => v !== '-'))].sort();
     fillSelect('filterModalidade', modalidades, modalidades.includes(selectedMod) ? selectedMod : "");
@@ -727,8 +732,9 @@ function executeIndividualSearch() {
     }
 
     const found = rawData.find(item => {
-        const cpf = String(item['CPF'] || '').toLowerCase();
-        const matricula = String(item['Nº pessoal'] || '').toLowerCase();
+        const keys = Object.keys(item);
+        const cpf = String(item[keys[10]] || '').toLowerCase();
+        const matricula = String(item[keys[6]] || '').toLowerCase();
 
         return cpf.includes(query) || matricula.includes(query);
     });
@@ -737,21 +743,22 @@ function executeIndividualSearch() {
         notFound.classList.add('hidden');
         panel.classList.remove('hidden');
 
+        const keys = Object.keys(found);
         document.getElementById('indNomeServidor').innerHTML =
-            `<i data-lucide="user-check" class="w-5 h-5 text-blue-900"></i> ${found['Nome do empregado'] || 'Não Informado'}`;
+            `<i data-lucide="user-check" class="w-5 h-5 text-blue-900"></i> ${found[keys[7]] || 'Não Informado'}`;
 
         document.getElementById('indNTE').innerText = getNTE(found);
-        document.getElementById('indMunicipio').innerText = found['Município'] || '-';
+        document.getElementById('indMunicipio').innerText = found[keys[1]] || '-';
         document.getElementById('indUnidade').innerText = getUnidadeEscolar(found);
-        document.getElementById('indCargo').innerText = found['Cargo'] || '-';
+        document.getElementById('indCargo').innerText = found[keys[14]] || '-';
         document.getElementById('indModalidade').innerText = getModalidade(found);
 
         document.getElementById('indAdmissao').innerText = formatDateBR(getAdmissaoVal(found));
         document.getElementById('indFimContrato').innerText = formatDateBR(getFimContratoVal(found));
 
-        document.getElementById('indCPF').innerText = found['CPF'] || '-';
+        document.getElementById('indCPF').innerText = found[keys[10]] || '-';
         document.getElementById('indTelefone').innerText = getTelefones(found);
-        document.getElementById('indMatricula').innerText = found['Nº pessoal'] || '-';
+        document.getElementById('indMatricula').innerText = found[keys[6]] || '-';
 
         const sitFolha = getSituacaoFolha(found);
         const badge = document.getElementById('indStatusFolhaBadge');
@@ -784,10 +791,11 @@ function getFilteredData() {
     const folhaVal = document.getElementById('filterFolha').value;
 
     return rawData.filter(item => {
+        const keys = Object.keys(item);
         const matchNTE = !nteVal || getNTE(item) === nteVal;
-        const matchMun = !munVal || item['Município'] === munVal;
+        const matchMun = !munVal || item[keys[1]] === munVal;
         const matchUnid = !unidVal || getUnidadeEscolar(item) === unidVal;
-        const matchCargo = !cargoVal || item['Cargo'] === cargoVal;
+        const matchCargo = !cargoVal || item[keys[14]] === cargoVal;
         const matchMod = !modVal || getModalidade(item) === modVal;
         const matchFolha = !folhaVal || getSituacaoFolha(item) === folhaVal;
 
@@ -828,20 +836,23 @@ document.getElementById('btnExportExcel').addEventListener('click', () => {
         return;
     }
 
-    const exportRows = filteredData.map(item => ({
-        'Matrícula': item['Nº pessoal'] || '-',
-        'Nome do Empregado': item['Nome do empregado'] || '-',
-        'Situação Escolar': getSituacaoFolha(item),
-        'Cargo / Função': item['Cargo'] || '-',
-        'Modalidade': getModalidade(item),
-        'Unidade Organizacional': getUnidadeEscolar(item),
-        'Município': item['Município'] || '-',
-        'NTE': getNTE(item),
-        'Admissão': formatDateBR(getAdmissaoVal(item)),
-        'Fim do Contrato': formatDateBR(getFimContratoVal(item)),
-        'CPF': item['CPF'] || '-',
-        'Contatos': getTelefones(item)
-    }));
+    const exportRows = filteredData.map(item => {
+        const keys = Object.keys(item);
+        return {
+            'Matrícula': item[keys[6]] || '-',
+            'Nome do Empregado': item[keys[7]] || '-',
+            'Situação Escolar': getSituacaoFolha(item),
+            'Cargo / Função': item[keys[14]] || '-',
+            'Modalidade': getModalidade(item),
+            'Unidade Organizacional': getUnidadeEscolar(item),
+            'Município': item[keys[1]] || '-',
+            'NTE': getNTE(item),
+            'Admissão': formatDateBR(getAdmissaoVal(item)),
+            'Fim do Contrato': formatDateBR(getFimContratoVal(item)),
+            'CPF': item[keys[10]] || '-',
+            'Contatos': getTelefones(item)
+        };
+    });
 
     const worksheet = XLSX.utils.json_to_sheet(exportRows);
     const workbook = XLSX.utils.book_new();
@@ -860,7 +871,10 @@ function updateKPIs(data) {
 
     document.getElementById('kpiEmFolha').innerText = emFolhaCount.toLocaleString('pt-BR');
 
-    const municipios = new Set(data.map(i => i['Município']).filter(Boolean));
+    const municipios = new Set(data.map(i => {
+        const keys = Object.keys(i);
+        return i[keys[1]];
+    }).filter(Boolean));
     document.getElementById('kpiMunicipios').innerText = municipios.size.toLocaleString('pt-BR');
 
     const ntes = new Set(data.map(i => getNTE(i)).filter(Boolean));
@@ -871,7 +885,8 @@ function renderCharts(data) {
     const cargoCounts = {};
 
     data.forEach(i => {
-        const cargo = i['Cargo'] || 'Não Informado';
+        const keys = Object.keys(i);
+        const cargo = i[keys[14]] || 'Não Informado';
         cargoCounts[cargo] = (cargoCounts[cargo] || 0) + 1;
     });
 
@@ -987,6 +1002,7 @@ function renderTable(data) {
         `Exibindo ${Math.min(100, data.length)} de ${data.length.toLocaleString('pt-BR')} registros`;
 
     data.slice(0, 100).forEach(row => {
+        const keys = Object.keys(row);
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50/80 border-b border-slate-100 transition-colors';
 
@@ -1002,13 +1018,13 @@ function renderTable(data) {
         }
 
         tr.innerHTML = `
-            <td class="px-4 py-3 font-mono text-slate-800 font-bold">${row['Nº pessoal'] || '-'}</td>
-            <td class="px-4 py-3 font-bold text-blue-950">${row['Nome do empregado'] || '-'}</td>
+            <td class="px-4 py-3 font-mono text-slate-800 font-bold">${row[keys[6]] || '-'}</td>
+            <td class="px-4 py-3 font-bold text-blue-950">${row[keys[7]] || '-'}</td>
             <td class="px-4 py-3">${badgeFolha}</td>
-            <td class="px-4 py-3">${row['Cargo'] || '-'}</td>
+            <td class="px-4 py-3">${row[keys[14]] || '-'}</td>
             <td class="px-4 py-3"><span class="bg-blue-50 text-blue-900 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-semibold">${getModalidade(row)}</span></td>
             <td class="px-4 py-3">${getUnidadeEscolar(row)}</td>
-            <td class="px-4 py-3">${row['Município'] || '-'}</td>
+            <td class="px-4 py-3">${row[keys[1]] || '-'}</td>
             <td class="px-4 py-3 font-semibold text-slate-800">${getNTE(row)}</td>
             <td class="px-4 py-3 font-medium text-slate-700">${formatDateBR(getAdmissaoVal(row))}</td>
             <td class="px-4 py-3 font-medium text-red-700">${formatDateBR(getFimContratoVal(row))}</td>
