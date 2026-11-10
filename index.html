@@ -155,7 +155,7 @@
             </div>
         </div>
 
-        <!-- Filtros Globais em Cascata com suporte a digitação (Datalist) -->
+        <!-- Filtros Globais -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-900 via-red-600 to-yellow-500"></div>
 
@@ -693,11 +693,11 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
     }, (error) => {
-        console.warn("Erro ao ler do Firebase, tentando cache local:", error);
+        console.warn("Erro ao ler do Firebase:", error);
     });
 });
 
-// Lógica de Filtros em Cascata com suporte a digitação (Datalist dinâmico)
+// Lógica de Filtros cruzados em cascata bidirecional
 function updateFilterOptions() {
     const nteVal = document.getElementById('filterNTE').value.trim();
     const munVal = document.getElementById('filterMunicipio').value.trim();
@@ -706,42 +706,37 @@ function updateFilterOptions() {
     const modVal = document.getElementById('filterModalidade').value.trim();
     const folhaVal = document.getElementById('filterFolha').value.trim();
 
-    // 1. NTE (Sempre todas as opções disponíveis)
-    const ntes = [...new Set(rawData.map(i => i['NTE']).filter(v => v && v !== '-'))].sort();
+    const getFilteredForField = (excludeField) => {
+        return rawData.filter(item => {
+            return (excludeField === 'NTE' || !nteVal || String(item['NTE']).toLowerCase().includes(nteVal.toLowerCase())) &&
+                   (excludeField === 'Município' || !munVal || String(item['Município']).toLowerCase().includes(munVal.toLowerCase())) &&
+                   (excludeField === 'Unid organizacional' || !unidVal || String(item['Unid organizacional']).toLowerCase().includes(unidVal.toLowerCase())) &&
+                   (excludeField === 'Cargo' || !cargoVal || String(item['Cargo']).toLowerCase().includes(cargoVal.toLowerCase())) &&
+                   (excludeField === 'Modalidade' || !modVal || String(item['Modalidade']).toLowerCase().includes(modVal.toLowerCase())) &&
+                   (excludeField === 'SITUAÇÃO FOLHA' || !folhaVal || String(item['SITUAÇÃO FOLHA']).toLowerCase().includes(folhaVal.toLowerCase()));
+        });
+    };
+
+    const ntes = [...new Set(getFilteredForField('NTE').map(i => i['NTE']).filter(v => v && v !== '-'))].sort();
     document.getElementById('dlNTE').innerHTML = ntes.map(v => `<option value="${v}">`).join('');
 
-    // 2. Município (Filtrado pelo NTE se preenchido)
-    let dataForMun = rawData;
-    if (nteVal) dataForMun = dataForMun.filter(i => String(i['NTE']).toLowerCase().includes(nteVal.toLowerCase()));
-    const municipios = [...new Set(dataForMun.map(i => i['Município']).filter(v => v && v !== '-'))].sort();
+    const municipios = [...new Set(getFilteredForField('Município').map(i => i['Município']).filter(v => v && v !== '-'))].sort();
     document.getElementById('dlMunicipio').innerHTML = municipios.map(v => `<option value="${v}">`).join('');
 
-    // 3. Unidade (Filtrado por NTE e Município se preenchidos)
-    let dataForUnid = dataForMun;
-    if (munVal) dataForUnid = dataForUnid.filter(i => String(i['Município']).toLowerCase().includes(munVal.toLowerCase()));
-    const unidades = [...new Set(dataForUnid.map(i => i['Unid organizacional']).filter(v => v && v !== '-'))].sort();
+    const unidades = [...new Set(getFilteredForField('Unid organizacional').map(i => i['Unid organizacional']).filter(v => v && v !== '-'))].sort();
     document.getElementById('dlUnidade').innerHTML = unidades.map(v => `<option value="${v}">`).join('');
 
-    // 4. Cargo (Filtrado pelos anteriores)
-    let dataForCargo = dataForUnid;
-    if (unidVal) dataForCargo = dataForCargo.filter(i => String(i['Unid organizacional']).toLowerCase().includes(unidVal.toLowerCase()));
-    const cargos = [...new Set(dataForCargo.map(i => i['Cargo']).filter(v => v && v !== '-'))].sort();
+    const cargos = [...new Set(getFilteredForField('Cargo').map(i => i['Cargo']).filter(v => v && v !== '-'))].sort();
     document.getElementById('dlCargo').innerHTML = cargos.map(v => `<option value="${v}">`).join('');
 
-    // 5. Modalidade (Filtrado pelos anteriores)
-    let dataForMod = dataForCargo;
-    if (cargoVal) dataForMod = dataForMod.filter(i => String(i['Cargo']).toLowerCase().includes(cargoVal.toLowerCase()));
-    const modalidades = [...new Set(dataForMod.map(i => i['Modalidade']).filter(v => v && v !== '-'))].sort();
+    const modalidades = [...new Set(getFilteredForField('Modalidade').map(i => i['Modalidade']).filter(v => v && v !== '-'))].sort();
     document.getElementById('dlModalidade').innerHTML = modalidades.map(v => `<option value="${v}">`).join('');
 
-    // 6. Situação de Folha (Filtrado pelos anteriores)
-    let dataForFolha = dataForMod;
-    if (modVal) dataForFolha = dataForFolha.filter(i => String(i['Modalidade']).toLowerCase().includes(modVal.toLowerCase()));
-    const folhas = [...new Set(dataForFolha.map(i => i['SITUAÇÃO FOLHA']).filter(v => v && v !== '-'))].sort();
+    const folhas = [...new Set(getFilteredForField('SITUAÇÃO FOLHA').map(i => i['SITUAÇÃO FOLHA']).filter(v => v && v !== '-'))].sort();
     document.getElementById('dlFolha').innerHTML = folhas.map(v => `<option value="${v}">`).join('');
 }
 
-// Eventos de alteração/digitação nos inputs em cascata
+// Eventos de alteração/digitação nos inputs
 ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => {
     document.getElementById(id).addEventListener('input', () => {
         updateFilterOptions();
@@ -894,6 +889,7 @@ function updateKPIs(data) {
 }
 
 function renderCharts(data) {
+    // Gráfico de Cargos (baseado nos dados filtrados)
     const cargoCounts = {};
     data.forEach(i => {
         const cargo = i['Cargo'] || 'Não Informado';
@@ -922,21 +918,22 @@ function renderCharts(data) {
         }
     });
 
+    // Gráfico de NTE (exibe todos os NTEs globais com seus quantitativos)
     const nteCounts = {};
-    data.forEach(i => {
+    rawData.forEach(i => {
         const nte = i['NTE'] || 'Não Informado';
         nteCounts[nte] = (nteCounts[nte] || 0) + 1;
     });
-    const topNTEs = Object.entries(nteCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    const allNTEs = Object.entries(nteCounts).sort((a, b) => b[1] - a[1]);
 
     if (chartNTEInstance) chartNTEInstance.destroy();
     chartNTEInstance = new Chart(document.getElementById('chartNTE'), {
         type: 'doughnut',
         data: {
-            labels: topNTEs.map(n => n[0]),
+            labels: allNTEs.map(n => n[0]),
             datasets: [{
-                data: topNTEs.map(n => n[1]),
-                backgroundColor: ['#1e3a8a', '#dc2626', '#0284c7', '#d97706', '#059669', '#7c3aed', '#db2777', '#475569']
+                data: allNTEs.map(n => n[1]),
+                backgroundColor: ['#1e3a8a', '#dc2626', '#0284c7', '#d97706', '#059669', '#7c3aed', '#db2777', '#475569', '#2563eb', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b']
             }]
         },
         options: {
