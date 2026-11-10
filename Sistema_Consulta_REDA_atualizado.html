@@ -383,22 +383,23 @@ let rawData = [];
 let chartCargosInstance = null;
 let chartNTEInstance = null;
 
-// Função auxiliar rigorosa para remover todos os caracteres proibidos pelo Firebase (. , # , $ , / , [ , ])
+// Função robusta de sanitização para o Firebase Realtime Database
 function sanitizeKeys(obj) {
-    if (typeof obj !== 'object' || obj === null) return obj;
-    
+    if (obj === null || typeof obj !== 'object') {
+        return obj;
+    }
+
     if (Array.isArray(obj)) {
         return obj.map(item => sanitizeKeys(item));
     }
-    
+
     const sanitized = {};
-    for (let key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-            // Substitui barras, pontos e outros caracteres especiais por sublinhado '_'
-            const cleanKey = key.replace(/[.#$\[\]/]/g, '_');
-            sanitized[cleanKey] = sanitizeKeys(obj[key]);
-        }
-    }
+    Object.keys(obj).forEach(key => {
+        // Substitui todos os caracteres proibidos pelo Firebase: . # $ / [ ]
+        const cleanKey = key.replace(/[.#$\[\]/]/g, '_').trim();
+        sanitized[cleanKey] = sanitizeKeys(obj[key]);
+    });
+
     return sanitized;
 }
 
@@ -515,7 +516,7 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
                 dateNF: 'dd/mm/yyyy'
             });
 
-            // Aplica a sanitização completa para remover caracteres proibidos das chaves (pontos, barras, etc)
+            // Aplica a sanitização completa em todas as chaves
             rawData = sanitizeKeys(tempRawData);
 
             const now = new Date();
