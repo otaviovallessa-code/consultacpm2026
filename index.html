@@ -16,6 +16,10 @@
 
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     
     <!-- Fonte Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,7 +49,7 @@
         </span>
         <span class="text-blue-300 text-[11px] font-medium hidden sm:inline flex items-center gap-1.5">
             <i data-lucide="cloud" class="w-3.5 h-3.5 text-emerald-400"></i>
-            Gestão e Monitoramento REDA (Nuvem / Cache Ativo)
+            Gestão e Monitoramento REDA (Firebase Nuvem Ativo)
         </span>
     </div>
 
@@ -417,6 +421,13 @@
 <script>
 lucide.createIcons();
 
+// Configuração do Firebase Realtime Database
+const firebaseConfig = {
+    databaseURL: "https://consultaredacpm-default-rtdb.firebaseio.com"
+};
+firebase.initializeApp(firebaseConfig);
+const dbRef = firebase.database().ref('reda_data');
+
 let rawData = [];
 let chartCargosInstance = null;
 let chartNTEInstance = null;
@@ -556,6 +567,7 @@ function formatDateBR(val) {
     return strVal;
 }
 
+// Leitura do Excel e Gravação automática no Firebase Realtime Database
 document.getElementById('excelFile').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -589,6 +601,13 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
                 data: rawData
             };
 
+            // Salva no Firebase Nuvem
+            dbRef.set(updateInfo).then(() => {
+                console.log("Dados salvos com sucesso no Firebase!");
+            }).catch((err) => {
+                console.error("Erro ao salvar no Firebase:", err);
+            });
+
             try {
                 localStorage.setItem('reda_cache', JSON.stringify(updateInfo));
             } catch (err) {
@@ -598,6 +617,7 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
             displayUpdateInfo(file.name, updateInfo.date);
             populateFilters();
             applyFilters();
+            alert('Planilha carregada e gravada na nuvem do Firebase com sucesso!');
 
         } catch (error) {
             alert('Erro ao ler a planilha. Verifique o arquivo selecionado.');
@@ -608,31 +628,36 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
     reader.readAsArrayBuffer(file);
 });
 
+// Botão de Limpeza da Nuvem (Exclusivo ADM)
 document.getElementById('btnClearCloud').addEventListener('click', function() {
     if (!isAdminLoggedIn) {
         alert('Acesso negado. Apenas o Administrador pode limpar os dados.');
         return;
     }
 
-    if (confirm('Tem certeza que deseja limpar todos os dados carregados na nuvem e no navegador?')) {
-        localStorage.removeItem('reda_cache');
-        rawData = [];
-        
-        document.getElementById('fileName').innerText = 'Nenhuma planilha carregada';
-        document.getElementById('lastUpdateLabel').innerHTML = '<i data-lucide="clock" class="w-3.5 h-3.5"></i> Aguardando dados...';
-        
-        ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => {
-            document.getElementById(id).innerHTML = '<option value="">Todos os itens</option>';
+    if (confirm('Tem certeza que deseja apagar todos os dados da nuvem do Firebase e do navegador?')) {
+        dbRef.remove().then(() => {
+            localStorage.removeItem('reda_cache');
+            rawData = [];
+            
+            document.getElementById('fileName').innerText = 'Nenhuma planilha carregada';
+            document.getElementById('lastUpdateLabel').innerHTML = '<i data-lucide="clock" class="w-3.5 h-3.5"></i> Aguardando dados...';
+            
+            ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => {
+                document.getElementById(id).innerHTML = '<option value="">Todos os itens</option>';
+            });
+
+            document.getElementById('detailedSection').classList.add('hidden');
+            document.getElementById('individualPanel').classList.add('hidden');
+            document.getElementById('searchIndividualInput').value = '';
+
+            updateKPIs([]);
+            renderCharts([]);
+            lucide.createIcons();
+            alert('Dados apagados da nuvem com sucesso!');
+        }).catch(err => {
+            alert('Erro ao apagar dados do Firebase: ' + err.message);
         });
-
-        document.getElementById('detailedSection').classList.add('hidden');
-        document.getElementById('individualPanel').classList.add('hidden');
-        document.getElementById('searchIndividualInput').value = '';
-
-        updateKPIs([]);
-        renderCharts([]);
-        lucide.createIcons();
-        alert('Dados limpos com sucesso!');
     }
 });
 
@@ -642,21 +667,35 @@ function displayUpdateInfo(name, dateStr) {
     lucide.createIcons();
 }
 
+// Carrega os dados da nuvem do Firebase ao abrir a página
 window.addEventListener('DOMContentLoaded', () => {
-    const cached = localStorage.getItem('reda_cache');
-    if (cached) {
-        try {
-            const parsed = JSON.parse(cached);
-            rawData = parsed.data || [];
-            if (parsed.fileName && parsed.date) {
-                displayUpdateInfo(parsed.fileName, parsed.date);
-            }
+    dbRef.once('value', (snapshot) => {
+        const cloudData = snapshot.val();
+        if (cloudData && cloudData.data) {
+            rawData = cloudData.data;
+            displayUpdateInfo(cloudData.fileName, cloudData.date);
             populateFilters();
             applyFilters();
-        } catch (e) {
-            console.error('Erro ao carregar cache salvo', e);
+        } else {
+            // Fallback para o cache local caso a nuvem esteja vazia
+            const cached = localStorage.getItem('reda_cache');
+            if (cached) {
+                try {
+                    const parsed = JSON.parse(cached);
+                    rawData = parsed.data || [];
+                    if (parsed.fileName && parsed.date) {
+                        displayUpdateInfo(parsed.fileName, parsed.date);
+                    }
+                    populateFilters();
+                    applyFilters();
+                } catch (e) {
+                    console.error('Erro ao carregar cache salvo', e);
+                }
+            }
         }
-    }
+    }, (error) => {
+        console.warn("Erro ao ler do Firebase, tentando cache local:", error);
+    });
 });
 
 function populateFilters() {
