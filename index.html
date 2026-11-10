@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Consulta REDA - Governo do Estado da Bahia</title>
+    <title>Painel de Acesso — Secretaria da Educação</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -25,14 +25,86 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <style>
         body { font-family: 'Inter', sans-serif; }
+        .tab-active {
+            border-bottom: 2px solid #eab308;
+            color: #fef08a;
+            font-weight: 700;
+        }
     </style>
 </head>
 
-<body class="bg-slate-100 text-slate-800 min-h-screen font-sans flex flex-col justify-between antialiased">
+<body class="bg-slate-100 text-slate-800 min-h-screen font-sans flex flex-col justify-between antialiased selection:bg-blue-900 selection:text-yellow-300">
 
-<div>
+<!-- ==================== TELA DE LOGIN / AUTENTICAÇÃO ==================== -->
+<div id="loginScreen" class="fixed inset-0 bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 z-50 flex items-center justify-center p-4">
+    <!-- Detalhe Tricolor no Topo -->
+    <div class="absolute top-0 left-0 right-0 h-2 flex">
+        <div class="h-full bg-blue-700 flex-1"></div>
+        <div class="h-full bg-white flex-1"></div>
+        <div class="h-full bg-red-600 flex-1"></div>
+    </div>
+
+    <div class="max-w-md w-full bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 p-8 space-y-6 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-900 via-red-600 to-yellow-500"></div>
+
+        <!-- Header da Caixa de Login -->
+        <div class="text-center space-y-3">
+            <div class="inline-flex p-4 bg-blue-950 rounded-2xl text-yellow-400 shadow-inner border border-blue-900/50">
+                <i data-lucide="building-2" class="w-10 h-10"></i>
+            </div>
+            <div>
+                <span class="text-[10px] font-black uppercase tracking-widest text-blue-900 block">Painel de Acesso — Secretaria da Educação</span>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight">Sistema de Consulta REDA</h1>
+                <p class="text-xs text-slate-500 font-medium">Coordenação de Provimento e Movimentação</p>
+            </div>
+        </div>
+
+        <!-- Alerta de Erro de Login -->
+        <div id="loginErrorAlert" class="hidden p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-semibold flex items-center gap-2.5 animate-in fade-in">
+            <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 text-rose-600"></i>
+            <span id="loginErrorMessage">Usuário ou senha inválidos!</span>
+        </div>
+
+        <!-- Formulário de Login -->
+        <form id="loginForm" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Usuário / E-mail</label>
+                <div class="relative">
+                    <input type="text" id="loginUsername" required placeholder="Digite seu usuário ou e-mail" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3.5 pl-10 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium text-slate-800">
+                    <i data-lucide="user" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Senha de Acesso</label>
+                <div class="relative">
+                    <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3.5 pl-10 pr-10 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium text-slate-800">
+                    <i data-lucide="key-round" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5"></i>
+                    <button type="button" id="btnTogglePassword" class="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600">
+                        <i data-lucide="eye" id="iconEye" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-gradient-to-r from-blue-950 via-blue-900 to-indigo-950 hover:from-blue-900 hover:to-indigo-900 text-white font-bold py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
+                <i data-lucide="log-in" class="w-4 h-4"></i>
+                Entrar no Sistema
+            </button>
+        </form>
+
+        <div class="pt-4 border-t border-slate-100 text-center">
+            <p class="text-[11px] text-slate-400">
+                Painel de Acesso Restrito — Secretaria da Educação SEC-BA.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== APLICAÇÃO PRINCIPAL (DASHBOARD) ==================== -->
+<div id="appContainer" class="hidden">
 
     <!-- Detalhe Tricolor da Bahia -->
     <div class="h-1.5 w-full flex">
@@ -45,12 +117,26 @@
     <div class="bg-blue-950 text-white text-xs py-2 px-4 sm:px-8 border-b border-blue-900/60 flex justify-between items-center shadow-inner">
         <span class="font-semibold tracking-wide flex items-center gap-2">
             <i data-lucide="shield-check" class="w-4 h-4 text-yellow-400"></i>
-            GOVERNO DO ESTADO DA BAHIA <span class="hidden sm:inline text-blue-300">|</span> <span class="hidden sm:inline font-normal text-blue-200">Secretaria da Educação — SEC</span>
+            PAINEL DE ACESSO <span class="hidden sm:inline text-blue-300">|</span> <span class="hidden sm:inline font-normal text-blue-200">Sistema de Consulta REDA</span>
         </span>
-        <span class="text-blue-300 text-[11px] font-medium hidden sm:inline flex items-center gap-1.5">
-            <i data-lucide="cloud" class="w-3.5 h-3.5 text-emerald-400"></i>
-            Gestão e Monitoramento REDA (Firebase Nuvem Ativo)
-        </span>
+        
+        <!-- Status de Usuário Logado & Logout -->
+        <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 bg-blue-900/80 px-3 py-1 rounded-full border border-blue-800">
+                <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                <span id="currentUserLabel" class="text-[11px] font-bold text-yellow-300">Usuário</span>
+                <span id="currentUserRoleBadge" class="text-[9px] uppercase px-1.5 py-0.5 rounded font-black bg-yellow-400 text-slate-950">ADM</span>
+            </div>
+
+            <button id="btnChangePassword" class="text-xs bg-amber-500 hover:bg-amber-400 text-slate-950 px-2.5 py-1 rounded-lg font-bold transition-all flex items-center gap-1 active:scale-95" title="Alterar minha senha">
+                <i data-lucide="key-round" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Alterar senha</span>
+            </button>
+            <button id="btnLogout" class="text-xs bg-red-600/80 hover:bg-red-600 text-white px-2.5 py-1 rounded-lg font-bold transition-all flex items-center gap-1 active:scale-95" title="Sair da Conta">
+                <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Sair</span>
+            </button>
+        </div>
     </div>
 
     <!-- Header Principal -->
@@ -62,16 +148,16 @@
                     <i data-lucide="building-2" class="w-10 h-10 text-yellow-400"></i>
                 </div>
                 <div>
-                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white drop-shadow-sm">Painel do Quantitativo REDA</h1>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white drop-shadow-sm">Sistema de Consulta REDA</h1>
                     <p class="text-blue-200 text-xs sm:text-sm font-medium flex items-center gap-1.5 mt-1">
                         <span>Secretaria da Educação</span>
                         <span class="text-blue-400">•</span>
-                        <span class="text-yellow-300 font-semibold">Coordenação de Provimento e Movimentação</span>
+                        <span class="text-yellow-300 font-semibold">Painel de Acesso e Controle de Contratos</span>
                     </p>
                 </div>
             </div>
 
-            <!-- Bloco de Controles e Ações (Upload + Área ADM + Reset da Nuvem) -->
+            <!-- Bloco de Controles e Ações (Upload + Gestão de Usuários + Limpeza Nuvem) -->
             <div class="flex flex-col items-start lg:items-end gap-3 w-full lg:w-auto bg-black/20 p-4 rounded-2xl border border-white/10 shadow-lg">
                 <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-start lg:justify-end">
                     
@@ -83,10 +169,10 @@
                         <input type="file" id="excelFile" accept=".xlsx, .xls" class="hidden">
                     </div>
 
-                    <!-- Botão Área ADM -->
-                    <button id="btnOpenAdmModal" class="bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-lg active:scale-95">
-                        <i data-lucide="lock" class="w-4 h-4"></i>
-                        <span>ÁREA ADM</span>
+                    <!-- Botão Gestão de Usuários (Visível apenas para Administradores) -->
+                    <button id="btnOpenUserManagement" class="hidden bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-lg active:scale-95">
+                        <i data-lucide="users" class="w-4 h-4"></i>
+                        <span>GESTÃO DE USUÁRIOS</span>
                     </button>
 
                     <!-- Botão Limpar Dados da Nuvem (Exclusivo ADM) -->
@@ -155,7 +241,7 @@
             </div>
         </div>
 
-        <!-- Filtros Globais (Layout Aprimorado) -->
+        <!-- Filtros Globais -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-900 via-red-600 to-yellow-500"></div>
 
@@ -323,7 +409,7 @@
             </p>
         </div>
 
-        <!-- Gráfico Expandido de Distribuição de REDA por NTE (Largura Total) -->
+        <!-- Gráfico Expandido de Distribuição de REDA por NTE -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow">
             <h3 class="text-xs font-extrabold text-blue-950 uppercase tracking-wider mb-4 border-b border-slate-100 pb-3 flex items-center gap-2">
                 <i data-lucide="bar-chart-3" class="w-4 h-4 text-blue-900"></i>
@@ -380,41 +466,161 @@
         </div>
 
     </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-xs py-6 text-center border-t border-slate-800 mt-12">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div class="flex items-center gap-2">
+                <span class="font-bold text-slate-200">Secretaria da Educação</span>
+                <span>—</span>
+                <span>Sistema de Consulta REDA</span>
+            </div>
+            <span class="text-slate-500 text-[11px]">Coordenação de Provimento e Movimentação (CPM)</span>
+        </div>
+    </footer>
 </div>
 
-<!-- Modal de Autenticação do Administrador -->
-<div id="admModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in zoom-in-95 duration-150">
-        <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-            <h3 class="text-sm font-extrabold text-blue-950 flex items-center gap-2">
-                <i data-lucide="shield-alert" class="w-4 h-4 text-yellow-600"></i>
-                Identificação do Administrador
-            </h3>
-            <button id="btnCloseAdmModal" class="text-slate-400 hover:text-slate-700">
-                <i data-lucide="x" class="w-4 h-4"></i>
+<!-- ==================== MODAL DE GESTÃO DE USUÁRIOS (ADMINISTRADOR) ==================== -->
+<div id="userManagementModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-4xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6 animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
+        
+        <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-amber-100 text-amber-800 rounded-xl">
+                    <i data-lucide="shield-check" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-extrabold text-blue-950">Painel ADM — Gestão de Usuários</h3>
+                    <p class="text-xs text-slate-500">Cadastre, edite perfis e gerencie credenciais de acesso ao sistema.</p>
+                </div>
+            </div>
+            <button id="btnCloseUserModal" class="text-slate-400 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100">
+                <i data-lucide="x" class="w-5 h-5"></i>
             </button>
         </div>
-        <p class="text-xs text-slate-600">Insira a senha de administrador para liberar a limpeza de dados da nuvem/sistema:</p>
-        <div>
-            <input type="password" id="admPasswordInput" placeholder="Senha de acesso..." class="w-full text-xs p-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-900 outline-none">
-        </div>
-        <div class="flex justify-end gap-2 pt-2">
-            <button id="btnCloseAdmModalCancel" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">Cancelar</button>
-            <button id="btnConfirmAdmLogin" class="px-4 py-2 text-xs font-bold text-white bg-blue-900 hover:bg-blue-800 rounded-xl shadow">Entrar como ADM</button>
+
+        <!-- Alerta no Modal -->
+        <div id="userModalAlert" class="hidden p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2"></div>
+
+        <!-- Formulário de Cadastro / Edição -->
+        <form id="userForm" class="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+            <h4 id="userFormTitle" class="text-xs font-black uppercase tracking-wider text-blue-950 flex items-center gap-2">
+                <i data-lucide="user-plus" class="w-4 h-4 text-amber-600"></i>
+                Cadastrar Novo Usuário
+            </h4>
+
+            <input type="hidden" id="editUserId">
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">Nome Completo</label>
+                    <input type="text" id="userFormName" required placeholder="Ex: Maria Silva" class="w-full text-xs bg-white border border-slate-300 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-900">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">Usuário / Login</label>
+                    <input type="text" id="userFormUsername" required placeholder="Ex: maria.silva" class="w-full text-xs bg-white border border-slate-300 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-900">
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">Senha</label>
+                    <input type="password" id="userFormPassword" placeholder="••••••••" class="w-full text-xs bg-white border border-slate-300 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-900">
+                    <span id="passwordHelpText" class="text-[9px] text-slate-400 hidden">Deixe em branco para manter a senha atual ao editar.</span>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-1">Perfil / Permissão</label>
+                    <select id="userFormRole" class="w-full text-xs bg-white border border-slate-300 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-900 font-semibold">
+                        <option value="user">Usuário Padrão (Consulta)</option>
+                        <option value="admin">Administrador (Total)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" id="btnCancelUserEdit" class="hidden px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-200 rounded-xl">Cancelar Edição</button>
+                <button type="submit" id="btnSaveUser" class="px-5 py-2.5 text-xs font-bold text-slate-950 bg-amber-400 hover:bg-amber-500 rounded-xl shadow-md transition-all flex items-center gap-2">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    <span>Salvar Usuário</span>
+                </button>
+            </div>
+        </form>
+
+        <!-- Tabela de Usuários Cadastrados -->
+        <div class="space-y-3">
+            <div class="flex justify-between items-center">
+                <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                    <i data-lucide="users" class="w-4 h-4 text-blue-950"></i>
+                    Usuários Cadastrados no Sistema
+                </h4>
+                <div class="relative w-48 sm:w-64">
+                    <input type="text" id="searchUserList" placeholder="Filtrar usuário..." class="w-full text-xs bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 pl-8 outline-none focus:ring-2 focus:ring-blue-900">
+                    <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5"></i>
+                </div>
+            </div>
+
+            <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                <div class="max-h-60 overflow-y-auto">
+                    <table class="w-full text-xs text-left text-slate-700">
+                        <thead class="bg-slate-100 text-[10px] text-slate-600 uppercase tracking-wider font-extrabold sticky top-0 border-b border-slate-200">
+                            <tr>
+                                <th class="px-4 py-3">Nome</th>
+                                <th class="px-4 py-3">Login</th>
+                                <th class="px-4 py-3">Perfil</th>
+                                <th class="px-4 py-3">Última alteração de senha</th>
+                                <th class="px-4 py-3 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody" class="divide-y divide-slate-100">
+                            <!-- Inserido dinamicamente via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<footer class="bg-slate-900 text-slate-400 text-xs py-6 text-center border-t border-slate-800 mt-12">
-    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-        <div class="flex items-center gap-2">
-            <span class="font-bold text-slate-200">Governo do Estado da Bahia</span>
-            <span>—</span>
-            <span>Secretaria da Educação SEC</span>
+<!-- ==================== MODAL DE ALTERAÇÃO DE SENHA DO USUÁRIO ==================== -->
+<div id="changePasswordModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-5">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+            <div>
+                <h3 class="text-lg font-extrabold text-blue-950">Alterar minha senha</h3>
+                <p class="text-xs text-slate-500 mt-1">Informe sua senha atual e escolha uma nova senha.</p>
+            </div>
+            <button type="button" id="btnCloseChangePassword" class="text-slate-400 hover:text-slate-700 p-2 rounded-lg hover:bg-slate-100">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
         </div>
-        <span class="text-slate-500 text-[11px]">Coordenação de Provimento e Movimentação (CPM)</span>
+
+        <div id="changePasswordAlert" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
+
+        <form id="changePasswordForm" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Senha atual</label>
+                <input type="password" id="currentPassword" required autocomplete="current-password"
+                    class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-900">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Nova senha</label>
+                <input type="password" id="newPassword" required minlength="6" autocomplete="new-password"
+                    placeholder="Mínimo de 6 caracteres"
+                    class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-900">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Confirmar nova senha</label>
+                <input type="password" id="confirmNewPassword" required minlength="6" autocomplete="new-password"
+                    class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-900">
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" id="btnCancelChangePassword" class="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl">Cancelar</button>
+                <button type="submit" id="btnSaveNewPassword" class="px-5 py-2.5 text-xs font-bold text-white bg-blue-950 hover:bg-blue-900 rounded-xl shadow-md">
+                    Salvar nova senha
+                </button>
+            </div>
+        </form>
     </div>
-</footer>
+</div>
 
 <script>
 lucide.createIcons();
@@ -425,48 +631,459 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const dbRef = firebase.database().ref('reda_data');
+const usersRef = firebase.database().ref('users');
 
 let rawData = [];
 let chartNTEInstance = null;
-let isAdminLoggedIn = false;
+let currentUser = null;
 
-// Controle do Modal ADM
-const admModal = document.getElementById('admModal');
-document.getElementById('btnOpenAdmModal').addEventListener('click', () => {
-    if (isAdminLoggedIn) {
-        if (confirm('Deseja encerrar a sessão de Administrador?')) {
-            isAdminLoggedIn = false;
-            document.getElementById('btnClearCloud').classList.add('hidden');
-            document.getElementById('btnOpenAdmModal').innerHTML = '<i data-lucide="lock" class="w-4 h-4"></i><span>ÁREA ADM</span>';
-            document.getElementById('btnOpenAdmModal').className = 'bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-lg active:scale-95';
-            lucide.createIcons();
-            alert('Sessão de ADM encerrada.');
+// Sistema de Gerenciamento de Usuários (Padrão + Nuvem/LocalStorage)
+const DEFAULT_ADMIN = {
+    id: 'admin_default',
+    name: 'Administrador do Sistema',
+    username: 'admin',
+    password: 'admin123',
+    role: 'admin'
+};
+
+function getUsersList() {
+    try {
+        const stored = localStorage.getItem('reda_users');
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
         }
-    } else {
-        admModal.classList.remove('hidden');
-        document.getElementById('admPasswordInput').value = '';
-        document.getElementById('admPasswordInput').focus();
+    } catch(e) {
+        console.warn('Erro ao carregar usuários locais', e);
+    }
+    return [DEFAULT_ADMIN];
+}
+
+function saveUsersList(users) {
+    try {
+        localStorage.setItem('reda_users', JSON.stringify(users));
+        return usersRef.set(users).catch(err => {
+            console.warn('Erro ao sincronizar usuários no Firebase:', err);
+            throw err;
+        });
+    } catch(e) {
+        console.error('Erro ao salvar usuários', e);
+        return Promise.reject(e);
+    }
+}
+
+// Sincroniza lista de usuários com o Firebase no início
+usersRef.on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data && Array.isArray(data)) {
+        localStorage.setItem('reda_users', JSON.stringify(data));
+        if (currentUser && currentUser.role === 'admin') {
+            renderUsersList();
+        }
     }
 });
 
-document.getElementById('btnCloseAdmModal').addEventListener('click', () => admModal.classList.add('hidden'));
-document.getElementById('btnCloseAdmModalCancel').addEventListener('click', () => admModal.classList.add('hidden'));
-
-document.getElementById('btnConfirmAdmLogin').addEventListener('click', () => {
-    const pass = document.getElementById('admPasswordInput').value;
-    if (pass === 'admin123' || pass === 'secba2026') {
-        isAdminLoggedIn = true;
-        admModal.classList.add('hidden');
-        document.getElementById('btnClearCloud').classList.remove('hidden');
-        document.getElementById('btnOpenAdmModal').innerHTML = '<i data-lucide="unlock" class="w-4 h-4"></i><span>ADM ATIVO</span>';
-        document.getElementById('btnOpenAdmModal').className = 'bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 shadow-lg active:scale-95';
-        lucide.createIcons();
-        alert('Autenticado com sucesso como Administrador!');
+// Toggle visibilidade de senha no login
+document.getElementById('btnTogglePassword').addEventListener('click', function() {
+    const input = document.getElementById('loginPassword');
+    const icon = document.getElementById('iconEye');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
     } else {
-        alert('Senha incorreta!');
+        input.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+    }
+    lucide.createIcons();
+});
+
+// Lógica de Autenticação / Login
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const userVal = document.getElementById('loginUsername').value.trim();
+    const passVal = document.getElementById('loginPassword').value.trim();
+    const errorAlert = document.getElementById('loginErrorAlert');
+
+    const users = getUsersList();
+    const foundUser = users.find(u => 
+        (u.username.toLowerCase() === userVal.toLowerCase() || (u.email && u.email.toLowerCase() === userVal.toLowerCase())) &&
+        u.password === passVal
+    );
+
+    if (foundUser) {
+        currentUser = foundUser;
+        localStorage.setItem('reda_logged_user', JSON.stringify(currentUser));
+        errorAlert.classList.add('hidden');
+        showDashboard();
+    } else {
+        errorAlert.classList.remove('hidden');
+        document.getElementById('loginErrorMessage').innerText = 'Usuário ou senha incorretos!';
     }
 });
 
+// Verifica Sessão Ativa
+window.addEventListener('DOMContentLoaded', () => {
+    const savedUser = localStorage.getItem('reda_logged_user');
+    if (savedUser) {
+        try {
+            currentUser = JSON.parse(savedUser);
+            showDashboard();
+        } catch(e) {
+            localStorage.removeItem('reda_logged_user');
+        }
+    }
+
+    // Carregar dados de consulta REDA no Firebase
+    dbRef.once('value', (snapshot) => {
+        const cloudData = snapshot.val();
+        if (cloudData && cloudData.data) {
+            rawData = cloudData.data;
+            displayUpdateInfo(cloudData.fileName, cloudData.date);
+            updateFilterOptions();
+            applyFilters();
+        } else {
+            const cached = localStorage.getItem('reda_cache');
+            if (cached) {
+                try {
+                    const parsed = JSON.parse(cached);
+                    rawData = parsed.data || [];
+                    if (parsed.fileName && parsed.date) {
+                        displayUpdateInfo(parsed.fileName, parsed.date);
+                    }
+                    updateFilterOptions();
+                    applyFilters();
+                } catch (e) {
+                    console.error('Erro ao carregar cache salvo', e);
+                }
+            }
+        }
+    });
+});
+
+// Logout
+document.getElementById('btnLogout').addEventListener('click', () => {
+    if (confirm('Deseja realmente sair do sistema?')) {
+        currentUser = null;
+        localStorage.removeItem('reda_logged_user');
+        document.getElementById('appContainer').classList.add('hidden');
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('loginPassword').value = '';
+    }
+});
+
+// ==================== ALTERAÇÃO DE SENHA PELO PRÓPRIO USUÁRIO ====================
+const changePasswordModal = document.getElementById('changePasswordModal');
+
+function closeChangePasswordModal() {
+    changePasswordModal.classList.add('hidden');
+    document.getElementById('changePasswordForm').reset();
+    document.getElementById('changePasswordAlert').classList.add('hidden');
+}
+
+function showPasswordAlert(message, type) {
+    const el = document.getElementById('changePasswordAlert');
+    el.className = 'p-3 rounded-xl text-xs font-semibold';
+    el.classList.add(type === 'success' ? 'bg-emerald-50' : 'bg-rose-50',
+                     type === 'success' ? 'text-emerald-700' : 'text-rose-700');
+    el.textContent = message;
+}
+
+document.getElementById('btnChangePassword').addEventListener('click', () => {
+    if (!currentUser) return;
+    document.getElementById('changePasswordForm').reset();
+    document.getElementById('changePasswordAlert').classList.add('hidden');
+    changePasswordModal.classList.remove('hidden');
+});
+
+document.getElementById('btnCloseChangePassword').addEventListener('click', closeChangePasswordModal);
+document.getElementById('btnCancelChangePassword').addEventListener('click', closeChangePasswordModal);
+
+document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    if (!currentUser) {
+        showPasswordAlert('Sessão não identificada. Entre novamente no sistema.', 'error');
+        return;
+    }
+
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmNewPassword').value;
+
+    if (newPassword.length < 6) {
+        showPasswordAlert('A nova senha deve ter pelo menos 6 caracteres.', 'error');
+        return;
+    }
+    if (newPassword !== confirmPassword) {
+        showPasswordAlert('A confirmação não corresponde à nova senha.', 'error');
+        return;
+    }
+    if (newPassword === currentPassword) {
+        showPasswordAlert('A nova senha deve ser diferente da senha atual.', 'error');
+        return;
+    }
+
+    const button = document.getElementById('btnSaveNewPassword');
+    button.disabled = true;
+    button.textContent = 'Salvando...';
+
+    try {
+        const snapshot = await usersRef.once('value');
+        let users = snapshot.val();
+        if (!Array.isArray(users) || !users.length) users = getUsersList();
+
+        const index = users.findIndex(u => u.id === currentUser.id);
+        if (index < 0) throw new Error('Usuário não localizado na lista de acessos.');
+        if (users[index].password !== currentPassword) {
+            showPasswordAlert('A senha atual informada está incorreta.', 'error');
+            button.disabled = false;
+            button.textContent = 'Salvar nova senha';
+            return;
+        }
+
+        const now = new Date().toISOString();
+        users[index] = {
+            ...users[index],
+            password: newPassword,
+            passwordChangedAt: now,
+            passwordChangedBy: users[index].username,
+            passwordChangeSource: 'pelo próprio usuário'
+        };
+
+        await saveUsersList(users);
+        currentUser = users[index];
+        localStorage.setItem('reda_logged_user', JSON.stringify(currentUser));
+
+        showPasswordAlert('Senha alterada e sincronizada com sucesso!', 'success');
+        setTimeout(closeChangePasswordModal, 1200);
+    } catch (err) {
+        console.error('Erro ao alterar senha:', err);
+        showPasswordAlert('Não foi possível salvar a nova senha no Firebase. Tente novamente.', 'error');
+    } finally {
+        button.disabled = false;
+        button.textContent = 'Salvar nova senha';
+    }
+});
+
+function formatPasswordChangeDate(user) {
+    if (!user.passwordChangedAt) return 'Ainda não alterada';
+    const date = new Date(user.passwordChangedAt);
+    if (isNaN(date.getTime())) return 'Registro indisponível';
+    return date.toLocaleString('pt-BR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+    });
+}
+
+function showDashboard() {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('appContainer').classList.remove('hidden');
+
+    document.getElementById('currentUserLabel').innerText = currentUser.name || currentUser.username;
+    
+    const roleBadge = document.getElementById('currentUserRoleBadge');
+    const btnUserMgmt = document.getElementById('btnOpenUserManagement');
+    const btnClearCloud = document.getElementById('btnClearCloud');
+
+    if (currentUser.role === 'admin') {
+        roleBadge.innerText = 'ADM';
+        roleBadge.className = 'text-[9px] uppercase px-1.5 py-0.5 rounded font-black bg-yellow-400 text-slate-950';
+        btnUserMgmt.classList.remove('hidden');
+        btnClearCloud.classList.remove('hidden');
+    } else {
+        roleBadge.innerText = 'CONSULTA';
+        roleBadge.className = 'text-[9px] uppercase px-1.5 py-0.5 rounded font-black bg-blue-700 text-white';
+        btnUserMgmt.classList.add('hidden');
+        btnClearCloud.classList.add('hidden');
+    }
+
+    lucide.createIcons();
+    applyFilters();
+}
+
+// ==================== GESTÃO DE USUÁRIOS (ADM) ====================
+const userModal = document.getElementById('userManagementModal');
+
+document.getElementById('btnOpenUserManagement').addEventListener('click', () => {
+    if (!currentUser || currentUser.role !== 'admin') {
+        alert('Acesso negado. Apenas administradores podem gerenciar usuários.');
+        return;
+    }
+    userModal.classList.remove('hidden');
+    resetUserForm();
+    renderUsersList();
+});
+
+document.getElementById('btnCloseUserModal').addEventListener('click', () => userModal.classList.add('hidden'));
+
+function resetUserForm() {
+    document.getElementById('userForm').reset();
+    document.getElementById('editUserId').value = '';
+    document.getElementById('userFormTitle').innerHTML = '<i data-lucide="user-plus" class="w-4 h-4 text-amber-600"></i> Cadastrar Novo Usuário';
+    document.getElementById('btnSaveUser').innerHTML = '<i data-lucide="check" class="w-4 h-4"></i><span>Salvar Usuário</span>';
+    document.getElementById('btnCancelUserEdit').classList.add('hidden');
+    document.getElementById('passwordHelpText').classList.add('hidden');
+    document.getElementById('userFormPassword').required = true;
+    lucide.createIcons();
+}
+
+document.getElementById('btnCancelUserEdit').addEventListener('click', resetUserForm);
+
+document.getElementById('userForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const editId = document.getElementById('editUserId').value;
+    const name = document.getElementById('userFormName').value.trim();
+    const username = document.getElementById('userFormUsername').value.trim();
+    const password = document.getElementById('userFormPassword').value.trim();
+    const role = document.getElementById('userFormRole').value;
+
+    let users = getUsersList();
+
+    const duplicate = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.id !== editId);
+    if (duplicate) {
+        showModalAlert('Já existe um usuário com esse login!', 'error');
+        return;
+    }
+
+    if (editId) {
+        users = users.map(u => {
+            if (u.id === editId) {
+                return {
+                    ...u,
+                    name,
+                    username,
+                    role,
+                    password: password !== '' ? password : u.password,
+                    ...(password !== '' ? {
+                        passwordChangedAt: new Date().toISOString(),
+                        passwordChangedBy: currentUser ? currentUser.username : 'administrador',
+                        passwordChangeSource: 'redefinida pelo administrador'
+                    } : {})
+                };
+            }
+            return u;
+        });
+        showModalAlert('Usuário atualizado com sucesso!', 'success');
+    } else {
+        if (!password) {
+            showModalAlert('Por favor, informe uma senha para o novo usuário.', 'error');
+            return;
+        }
+        const newUser = {
+            id: 'user_' + Date.now(),
+            name,
+            username,
+            password,
+            role,
+            passwordChangedAt: new Date().toISOString(),
+            passwordChangedBy: currentUser ? currentUser.username : 'administrador',
+            passwordChangeSource: 'senha inicial cadastrada pelo administrador'
+        };
+        users.push(newUser);
+        showModalAlert('Novo usuário cadastrado com sucesso!', 'success');
+    }
+
+    saveUsersList(users);
+    resetUserForm();
+    renderUsersList();
+});
+
+function showModalAlert(msg, type) {
+    const alertEl = document.getElementById('userModalAlert');
+    alertEl.classList.remove('hidden', 'bg-emerald-50', 'text-emerald-700', 'bg-rose-50', 'text-rose-700');
+    if (type === 'success') {
+        alertEl.classList.add('bg-emerald-50', 'text-emerald-700');
+        alertEl.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i> ${msg}`;
+    } else {
+        alertEl.classList.add('bg-rose-50', 'text-rose-700');
+        alertEl.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4 text-rose-600"></i> ${msg}`;
+    }
+    lucide.createIcons();
+    setTimeout(() => alertEl.classList.add('hidden'), 4000);
+}
+
+document.getElementById('searchUserList').addEventListener('input', renderUsersList);
+
+function renderUsersList() {
+    const filter = document.getElementById('searchUserList').value.toLowerCase();
+    const users = getUsersList();
+    const tbody = document.getElementById('usersTableBody');
+    tbody.innerHTML = '';
+
+    const filtered = users.filter(u => 
+        u.name.toLowerCase().includes(filter) || 
+        u.username.toLowerCase().includes(filter)
+    );
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="px-4 py-4 text-center text-slate-400 italic">Nenhum usuário encontrado.</td></tr>`;
+        return;
+    }
+
+    filtered.forEach(u => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition-colors';
+
+        const roleBadge = u.role === 'admin' 
+            ? `<span class="bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded text-[10px] font-extrabold">ADMINISTRADOR</span>`
+            : `<span class="bg-blue-100 text-blue-900 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-bold">CONSULTA</span>`;
+
+        tr.innerHTML = `
+            <td class="px-4 py-3 font-semibold text-slate-800">${u.name}</td>
+            <td class="px-4 py-3 font-mono font-bold text-slate-600">${u.username}</td>
+            <td class="px-4 py-3">${roleBadge}</td>
+            <td class="px-4 py-3">
+                <span class="block font-semibold text-slate-700">${formatPasswordChangeDate(u)}</span>
+                <span class="block text-[10px] text-slate-400">${u.passwordChangeSource === 'pelo próprio usuário' ? 'Alterada pelo usuário' : (u.passwordChangeSource === 'redefinida pelo administrador' ? 'Redefinida pelo ADM' : (u.passwordChangeSource === 'senha inicial cadastrada pelo administrador' ? 'Cadastro inicial' : ''))}</span>
+            </td>
+            <td class="px-4 py-3 text-right space-x-1">
+                <button onclick="editUser('${u.id}')" class="p-1.5 bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 rounded-lg transition-all" title="Editar / Resetar Senha">
+                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+                </button>
+                ${u.username !== 'admin' ? `
+                <button onclick="deleteUser('${u.id}')" class="p-1.5 bg-slate-100 hover:bg-rose-100 text-slate-700 hover:text-rose-700 rounded-lg transition-all" title="Excluir Usuário">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>` : ''}
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+    lucide.createIcons();
+}
+
+window.editUser = function(id) {
+    const users = getUsersList();
+    const target = users.find(u => u.id === id);
+    if (!target) return;
+
+    document.getElementById('editUserId').value = target.id;
+    document.getElementById('userFormName').value = target.name;
+    document.getElementById('userFormUsername').value = target.username;
+    document.getElementById('userFormRole').value = target.role;
+    document.getElementById('userFormPassword').value = '';
+    document.getElementById('userFormPassword').required = false;
+
+    document.getElementById('userFormTitle').innerHTML = '<i data-lucide="user-check" class="w-4 h-4 text-blue-900"></i> Editar Usuário';
+    document.getElementById('btnSaveUser').innerHTML = '<i data-lucide="refresh-cw" class="w-4 h-4"></i><span>Atualizar Usuário</span>';
+    document.getElementById('btnCancelUserEdit').classList.remove('hidden');
+    document.getElementById('passwordHelpText').classList.remove('hidden');
+
+    lucide.createIcons();
+};
+
+window.deleteUser = function(id) {
+    let users = getUsersList();
+    const target = users.find(u => u.id === id);
+    if (!target) return;
+
+    if (confirm(`Tem certeza que deseja remover o usuário "${target.name}" (${target.username})?`)) {
+        users = users.filter(u => u.id !== id);
+        saveUsersList(users);
+        showModalAlert('Usuário removido com sucesso!', 'success');
+        renderUsersList();
+    }
+};
+
+// ==================== LÓGICA DE DADOS REDA (CÓDIGO ORIGINAL MANTIDO) ====================
 function cleanAndNormalizeData(jsonRows) {
     return jsonRows.map(row => {
         const keys = Object.keys(row);
@@ -570,7 +1187,7 @@ function formatDateBR(val) {
     return strVal;
 }
 
-// Leitura do Excel e Gravação no Firebase
+// Upload de Excel
 document.getElementById('excelFile').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -605,9 +1222,9 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
             };
 
             dbRef.set(updateInfo).then(() => {
-                console.log("Dados salvos com sucesso no Firebase!");
+                console.log("Dados salvos no Firebase!");
             }).catch((err) => {
-                console.error("Erro ao salvar no Firebase:", err);
+                console.error("Erro no Firebase:", err);
             });
 
             try {
@@ -619,10 +1236,10 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
             displayUpdateInfo(file.name, updateInfo.date);
             updateFilterOptions();
             applyFilters();
-            alert('Planilha carregada e gravada na nuvem do Firebase com sucesso!');
+            alert('Planilha carregada e atualizada na nuvem com sucesso!');
 
         } catch (error) {
-            alert('Erro ao ler a planilha. Verifique o arquivo selecionado.');
+            alert('Erro ao ler a planilha. Verifique o arquivo.');
             console.error(error);
         }
     };
@@ -630,14 +1247,14 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
     reader.readAsArrayBuffer(file);
 });
 
-// Limpeza da Nuvem
+// Limpeza da Nuvem (Apenas Administrador)
 document.getElementById('btnClearCloud').addEventListener('click', function() {
-    if (!isAdminLoggedIn) {
-        alert('Acesso negado. Apenas o Administrador pode limpar os dados.');
+    if (!currentUser || currentUser.role !== 'admin') {
+        alert('Apenas administradores podem limpar os dados.');
         return;
     }
 
-    if (confirm('Tem certeza que deseja apagar todos os dados da nuvem do Firebase e do navegador?')) {
+    if (confirm('Tem certeza que deseja apagar todos os dados de servidores da nuvem?')) {
         dbRef.remove().then(() => {
             localStorage.removeItem('reda_cache');
             rawData = [];
@@ -657,7 +1274,7 @@ document.getElementById('btnClearCloud').addEventListener('click', function() {
             renderCharts([]);
             updateFilterOptions();
             lucide.createIcons();
-            alert('Dados apagados da nuvem com sucesso!');
+            alert('Dados apagados com sucesso!');
         }).catch(err => {
             alert('Erro ao apagar dados do Firebase: ' + err.message);
         });
@@ -670,37 +1287,6 @@ function displayUpdateInfo(name, dateStr) {
     lucide.createIcons();
 }
 
-// Carrega os dados do Firebase ao iniciar
-window.addEventListener('DOMContentLoaded', () => {
-    dbRef.once('value', (snapshot) => {
-        const cloudData = snapshot.val();
-        if (cloudData && cloudData.data) {
-            rawData = cloudData.data;
-            displayUpdateInfo(cloudData.fileName, cloudData.date);
-            updateFilterOptions();
-            applyFilters();
-        } else {
-            const cached = localStorage.getItem('reda_cache');
-            if (cached) {
-                try {
-                    const parsed = JSON.parse(cached);
-                    rawData = parsed.data || [];
-                    if (parsed.fileName && parsed.date) {
-                        displayUpdateInfo(parsed.fileName, parsed.date);
-                    }
-                    updateFilterOptions();
-                    applyFilters();
-                } catch (e) {
-                    console.error('Erro ao carregar cache salvo', e);
-                }
-            }
-        }
-    }, (error) => {
-        console.warn("Erro ao ler do Firebase:", error);
-    });
-});
-
-// Lógica de Filtros cruzados em cascata bidirecional com opção em branco (limpeza rápida por campo)
 function updateFilterOptions() {
     const nteVal = document.getElementById('filterNTE').value.trim();
     const munVal = document.getElementById('filterMunicipio').value.trim();
@@ -720,7 +1306,6 @@ function updateFilterOptions() {
         });
     };
 
-    // Adiciona opção em branco (value="") no topo permitindo limpar o campo individualmente ao abrir/clicar no input
     const ntes = [...new Set(getFilteredForField('NTE').map(i => i['NTE']).filter(v => v && v !== '-'))].sort();
     document.getElementById('dlNTE').innerHTML = `<option value="">` + ntes.map(v => `<option value="${v}">`).join('');
 
@@ -740,7 +1325,6 @@ function updateFilterOptions() {
     document.getElementById('dlFolha').innerHTML = `<option value="">` + folhas.map(v => `<option value="${v}">`).join('');
 }
 
-// Eventos de alteração/digitação nos inputs
 ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => {
     const inputEl = document.getElementById(id);
     inputEl.addEventListener('input', () => {
@@ -752,7 +1336,6 @@ function updateFilterOptions() {
     });
 });
 
-// Limpar Filtros
 document.getElementById('btnClearFilters').addEventListener('click', () => {
     ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => {
         document.getElementById(id).value = "";
@@ -763,7 +1346,6 @@ document.getElementById('btnClearFilters').addEventListener('click', () => {
 
 document.getElementById('btnSearchIndividual').addEventListener('click', executeIndividualSearch);
 
-// Evento ao digitar ou apagar no campo de consulta individual (recolhe painel automaticamente)
 document.getElementById('searchIndividualInput').addEventListener('input', function(e) {
     const val = this.value.trim();
     if (!val) {
@@ -906,7 +1488,6 @@ function updateKPIs(data) {
     document.getElementById('kpiNte').innerText = ntes.size.toLocaleString('pt-BR');
 }
 
-// Plugin personalizado para desenhar o quantitativo numérico exato no topo de cada barra
 const barValuesPlugin = {
     id: 'barValues',
     afterDatasetsDraw(chart) {
@@ -930,7 +1511,6 @@ const barValuesPlugin = {
 };
 
 function renderCharts(data) {
-    // Gráfico de Barras Aprimorado (Exibindo TODOS os NTEs com visual moderno)
     const nteCounts = {};
     rawData.forEach(i => {
         const nte = i['NTE'] || 'Não Informado';
@@ -940,7 +1520,6 @@ function renderCharts(data) {
 
     const ctx = document.getElementById('chartNTE').getContext('2d');
     
-    // Criando degradê profissional de cor
     const gradient = ctx.createLinearGradient(0, 0, 0, 350);
     gradient.addColorStop(0, '#1e3a8a');
     gradient.addColorStop(1, '#3b82f6');
@@ -969,9 +1548,7 @@ function renderCharts(data) {
             responsive: true,
             maintainAspectRatio: false,
             layout: {
-                padding: {
-                    top: 20
-                }
+                padding: { top: 20 }
             },
             plugins: {
                 legend: { display: false },
