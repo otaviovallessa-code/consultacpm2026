@@ -192,7 +192,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Situação Escolar (Col. F)</label>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Situação Escolar</label>
                     <select id="filterFolha" class="w-full text-xs bg-slate-50 border-slate-300 rounded-lg p-2.5 border focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all">
                         <option value="">Todas as Situações</option>
                     </select>
@@ -345,12 +345,12 @@
                         <tr>
                             <th class="px-4 py-3.5">Matrícula</th>
                             <th class="px-4 py-3.5">Nome do Empregado</th>
-                            <th class="px-4 py-3.5">Situação Escolar (Col. F)</th>
+                            <th class="px-4 py-3.5">Situação Escolar</th>
                             <th class="px-4 py-3.5">Cargo / Função</th>
                             <th class="px-4 py-3.5">Modalidade</th>
-                            <th class="px-4 py-3.5">Unidade Escolar (Col. E)</th>
+                            <th class="px-4 py-3.5">Unidade Escolar</th>
                             <th class="px-4 py-3.5">Município</th>
-                            <th class="px-4 py-3.5">NTE (Col. A)</th>
+                            <th class="px-4 py-3.5">NTE</th>
                             <th class="px-4 py-3.5">Admissão</th>
                             <th class="px-4 py-3.5">Fim do Contrato</th>
                         </tr>
@@ -383,81 +383,87 @@ let rawData = [];
 let chartCargosInstance = null;
 let chartNTEInstance = null;
 
-// Função robusta de sanitização para o Firebase Realtime Database
-function sanitizeKeys(obj) {
-    if (obj === null || typeof obj !== 'object') {
-        return obj;
-    }
+// Função ultra-robusta: limpa chaves e normaliza índices por posição exata se necessário
+function cleanAndNormalizeData(jsonRows) {
+    return jsonRows.map(row => {
+        const keys = Object.keys(row);
+        
+        // Mapeia por correspondência exata de nomes ou pelas posições fixas oficiais da planilha SEC-BA:
+        // Col 0 (A): NTE
+        // Col 1 (B): Município
+        // Col 2 (C): Coduo
+        // Col 3 (D): Codsec
+        // Col 4 (E): Unid organizacional
+        // Col 5 (F): SITUAÇÃO ESCOLAR
+        // Col 6 (G): Nº pessoal
+        // Col 7 (H): Nome do empregado
+        // Col 8 (I): ADMISSÃO
+        // Col 9 (J): Fim contrato
+        // Col 10 (K): CPF
+        // Col 11 (L): TELEFONE
+        // Col 12 (M): CELULAR
+        // Col 13 (N): EMAIL
+        // Col 14 (O): Cargo
+        // Col 15 (P): Modalidade
 
-    if (Array.isArray(obj)) {
-        return obj.map(item => sanitizeKeys(item));
-    }
+        const getVal = (possibleNames, index) => {
+            for (let name of possibleNames) {
+                // Procura chave limpa correspondente
+                const foundKey = keys.find(k => k.trim().toLowerCase() === name.toLowerCase());
+                if (foundKey && row[foundKey] !== undefined && row[foundKey] !== null && String(row[foundKey]).trim() !== '') {
+                    return String(row[foundKey]).trim();
+                }
+            }
+            // Fallback por índice posicional caso o nome exato falhe
+            if (keys[index] !== undefined && row[keys[index]] !== undefined) {
+                return String(row[keys[index]]).trim();
+            }
+            return '';
+        };
 
-    const sanitized = {};
-    Object.keys(obj).forEach(key => {
-        const cleanKey = key.replace(/[.#$\[\]/]/g, '_').trim();
-        sanitized[cleanKey] = sanitizeKeys(obj[key]);
+        const nte = getVal(['NTE', 'NTE (Sede)', 'SEDE'], 0);
+        const municipio = getVal(['Município', 'Municipio'], 1);
+        const codsec = getVal(['Codsec', 'Cod. SEC'], 3);
+        const unidadeOrg = getVal(['Unid organizacional', 'Unidade Organizacional', 'Unidade Escolar'], 4);
+        const situacaoEscolar = getVal(['SITUAÇÃO ESCOLAR', 'Situação Escolar', 'Situação Folha'], 5);
+        const numPessoal = getVal(['Nº pessoal', 'Matrícula', 'N_ pessoal'], 6);
+        const nomeEmpregado = getVal(['Nome do empregado', 'Nome'], 7);
+        const admissao = getVal(['ADMISSÃO', 'Admissão', 'Admissao'], 8);
+        const fimContrato = getVal(['Fim contrato', 'Fim Contrato'], 9);
+        const cpf = getVal(['CPF'], 10);
+        const telefone = getVal(['TELEFONE', 'Telefone'], 11);
+        const celular = getVal(['CELULAR', 'Celular'], 12);
+        const email = getVal(['EMAIL', 'E-mail', 'Email'], 13);
+        const cargo = getVal(['Cargo', 'CARGO'], 14);
+        const modalidade = getVal(['Modalidade', 'MODALIDADE'], 15);
+
+        // Monta Unidade Escolar unida ao Codsec (Coluna E + Coluna D)
+        let unidadeCompleta = unidadeOrg || '-';
+        if (codsec) {
+            unidadeCompleta += ` (Codsec: ${codsec})`;
+        }
+
+        return {
+            'NTE': nte || '-',
+            'Município': municipio || '-',
+            'Unid organizacional': unidadeCompleta,
+            'SITUAÇÃO ESCOLAR': situacaoEscolar || '-',
+            'Nº pessoal': numPessoal || '-',
+            'Nome do empregado': nomeEmpregado || '-',
+            'ADMISSÃO': admissao || '-',
+            'Fim contrato': fimContrato || '-',
+            'CPF': cpf || '-',
+            'TELEFONE': telefone,
+            'CELULAR': celular,
+            'EMAIL': email,
+            'Cargo': cargo || '-',
+            'Modalidade': modalidade || '-'
+        };
     });
-
-    return sanitized;
-}
-
-// Funções de leitura indexada exata pelas colunas da planilha enxuta
-function getNTE(row) {
-    const keys = Object.keys(row);
-    // Coluna A (primeira coluna - índice 0)
-    return row[keys[0]] || '-';
-}
-
-function getUnidadeEscolar(row) {
-    const keys = Object.keys(row);
-    // Coluna E (Unid organizacional - índice 4) e Coluna D (Codsec - índice 3)
-    const desc = row[keys[4]] || '-';
-    const codsec = row[keys[3]] || '';
-    
-    let info = desc;
-    if (codsec && String(codsec).trim() !== '') {
-        info += ` (Codsec: ${codsec})`;
-    }
-    return info;
-}
-
-function getSituacaoFolha(row) {
-    const keys = Object.keys(row);
-    // Coluna F (SITUAÇÃO ESCOLAR - índice 5)
-    return row[keys[5]] || '-';
-}
-
-function getAdmissaoVal(row) {
-    const keys = Object.keys(row);
-    // Coluna I (ADMISSÃO - índice 8)
-    return row[keys[8]] || '';
-}
-
-function getFimContratoVal(row) {
-    const keys = Object.keys(row);
-    // Coluna J (Fim contrato - índice 9)
-    return row[keys[9]] || '';
-}
-
-function getTelefones(row) {
-    const keys = Object.keys(row);
-    const tel = row[keys[11]] || '';
-    const cel = row[keys[12]] || '';
-    const email = row[keys[13]] || '';
-    
-    const arrayInfo = [tel, cel, email].filter(Boolean);
-    return arrayInfo.length > 0 ? arrayInfo.join(' | ') : '-';
-}
-
-function getModalidade(row) {
-    const keys = Object.keys(row);
-    // Coluna P (Modalidade - índice 15)
-    return row[keys[15]] || row['Modalidade'] || '-';
 }
 
 function formatDateBR(val) {
-    if (!val) return '-';
+    if (!val || val === '-') return '-';
 
     if (val instanceof Date && !isNaN(val)) {
         return `${String(val.getDate()).padStart(2, '0')}/${String(val.getMonth() + 1).padStart(2, '0')}/${val.getFullYear()}`;
@@ -471,9 +477,6 @@ function formatDateBR(val) {
     }
 
     let strVal = String(val).trim();
-
-    if (!strVal || strVal === 'undefined' || strVal === 'null') return '-';
-
     if (strVal.includes('T')) strVal = strVal.split('T')[0];
 
     if (strVal.includes('-')) {
@@ -489,11 +492,9 @@ function formatDateBR(val) {
             let p1 = parseInt(parts[0], 10);
             let p2 = parseInt(parts[1], 10);
             let p3 = parts[2];
-
             if (p1 <= 12 && p2 > 12) {
                 return `${String(p2).padStart(2, '0')}/${String(p1).padStart(2, '0')}/${p3}`;
             }
-
             return `${String(p1).padStart(2, '0')}/${String(p2).padStart(2, '0')}/${p3}`;
         }
     }
@@ -520,29 +521,25 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
             const firstSheet = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheet];
 
-            let tempRawData = XLSX.utils.sheet_to_json(worksheet, {
+            let tempJson = XLSX.utils.sheet_to_json(worksheet, {
                 raw: false,
                 dateNF: 'dd/mm/yyyy'
             });
 
-            rawData = sanitizeKeys(tempRawData);
+            rawData = cleanAndNormalizeData(tempJson);
 
             const now = new Date();
-
             const updateInfo = {
                 fileName: file.name,
                 date: now.toLocaleDateString('pt-BR') + ' às ' +
-                    now.toLocaleTimeString('pt-BR', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    }),
+                    now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
                 data: rawData
             };
 
             try {
                 localStorage.setItem('reda_cache', JSON.stringify(updateInfo));
             } catch (err) {
-                console.warn('Arquivo muito grande para persistência local completa.', err);
+                console.warn('Cache local excedido.', err);
             }
 
             displayUpdateInfo(file.name, updateInfo.date);
@@ -567,19 +564,15 @@ function displayUpdateInfo(name, dateStr) {
 // Inicialização
 window.addEventListener('DOMContentLoaded', () => {
     const cached = localStorage.getItem('reda_cache');
-
     if (cached) {
         try {
             const parsed = JSON.parse(cached);
             rawData = parsed.data || [];
-
             if (parsed.fileName && parsed.date) {
                 displayUpdateInfo(parsed.fileName, parsed.date);
             }
-
             populateFilters();
             applyFilters();
-
         } catch (e) {
             console.error('Erro ao carregar cache salvo', e);
         }
@@ -601,121 +594,76 @@ function populateFilters() {
     const selectedMod = modSelect.value;
     const selectedFolha = folhaSelect.value;
 
-    const ntes = [...new Set(rawData.map(item => getNTE(item)).filter(Boolean))].sort();
+    const ntes = [...new Set(rawData.map(item => item['NTE']).filter(v => v && v !== '-'))].sort();
     fillSelect('filterNTE', ntes, selectedNTE);
 
     let dataForMun = rawData;
-    if (selectedNTE) {
-        dataForMun = rawData.filter(item => getNTE(item) === selectedNTE);
-    }
-    const municipios = [...new Set(dataForMun.map(item => item['Município']).filter(Boolean))].sort();
+    if (selectedNTE) dataForMun = rawData.filter(item => item['NTE'] === selectedNTE);
+    const municipios = [...new Set(dataForMun.map(item => item['Município']).filter(v => v && v !== '-'))].sort();
     fillSelect('filterMunicipio', municipios, municipios.includes(selectedMun) ? selectedMun : "");
 
     let dataForUnid = dataForMun;
-    if (selectedMun) {
-        dataForUnid = dataForMun.filter(item => item['Município'] === selectedMun);
-    }
-    const unidades = [...new Set(dataForUnid.map(item => getUnidadeEscolar(item)).filter(v => v !== '-'))].sort();
+    if (selectedMun) dataForUnid = dataForMun.filter(item => item['Município'] === selectedMun);
+    const unidades = [...new Set(dataForUnid.map(item => item['Unid organizacional']).filter(v => v && v !== '-'))].sort();
     fillSelect('filterUnidade', unidades, unidades.includes(selectedUnid) ? selectedUnid : "");
 
     let dataForCargo = dataForUnid;
-    if (selectedUnid) {
-        dataForCargo = dataForUnid.filter(item => getUnidadeEscolar(item) === selectedUnid);
-    }
-    const cargos = [...new Set(dataForCargo.map(item => item['Cargo']).filter(Boolean))].sort();
+    if (selectedUnid) dataForCargo = dataForUnid.filter(item => item['Unid organizacional'] === selectedUnid);
+    const cargos = [...new Set(dataForCargo.map(item => item['Cargo']).filter(v => v && v !== '-'))].sort();
     fillSelect('filterCargo', cargos, cargos.includes(selectedCargo) ? selectedCargo : "");
 
     let dataForMod = dataForCargo;
-    if (selectedCargo) {
-        dataForMod = dataForCargo.filter(item => item['Cargo'] === selectedCargo);
-    }
-    const modalidades = [...new Set(dataForMod.map(item => getModalidade(item)).filter(v => v !== '-'))].sort();
+    if (selectedCargo) dataForMod = dataForCargo.filter(item => item['Cargo'] === selectedCargo);
+    const modalidades = [...new Set(dataForMod.map(item => item['Modalidade']).filter(v => v && v !== '-'))].sort();
     fillSelect('filterModalidade', modalidades, modalidades.includes(selectedMod) ? selectedMod : "");
 
     let dataForFolha = dataForMod;
-    if (selectedMod) {
-        dataForFolha = dataForMod.filter(item => getModalidade(item) === selectedMod);
-    }
-    const folhas = [...new Set(dataForFolha.map(item => getSituacaoFolha(item)).filter(v => v !== '-'))].sort();
+    if (selectedMod) dataForFolha = dataForMod.filter(item => item['Modalidade'] === selectedMod);
+    const folhas = [...new Set(dataForFolha.map(item => item['SITUAÇÃO ESCOLAR']).filter(v => v && v !== '-'))].sort();
     fillSelect('filterFolha', folhas, folhas.includes(selectedFolha) ? selectedFolha : "");
 }
 
 function fillSelect(elementId, items, selectedValue = "") {
     const select = document.getElementById(elementId);
     const defaultOptionText = select.options[0].text;
-
     select.innerHTML = `<option value="">${defaultOptionText}</option>`;
-
     items.forEach(item => {
         const option = document.createElement('option');
         option.value = item;
         option.textContent = item;
-
         if (item === selectedValue) option.selected = true;
-
         select.appendChild(option);
     });
 }
 
 document.getElementById('filterNTE').addEventListener('change', () => {
-    document.getElementById('filterMunicipio').value = "";
-    document.getElementById('filterUnidade').value = "";
-    document.getElementById('filterCargo').value = "";
-    document.getElementById('filterModalidade').value = "";
-    document.getElementById('filterFolha').value = "";
-
-    populateFilters();
-    applyFilters();
+    ['filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => document.getElementById(id).value = "");
+    populateFilters(); applyFilters();
 });
-
 document.getElementById('filterMunicipio').addEventListener('change', () => {
-    document.getElementById('filterUnidade').value = "";
-    document.getElementById('filterCargo').value = "";
-    document.getElementById('filterModalidade').value = "";
-    document.getElementById('filterFolha').value = "";
-
-    populateFilters();
-    applyFilters();
+    ['filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => document.getElementById(id).value = "");
+    populateFilters(); applyFilters();
 });
-
 document.getElementById('filterUnidade').addEventListener('change', () => {
-    document.getElementById('filterCargo').value = "";
-    document.getElementById('filterModalidade').value = "";
-    document.getElementById('filterFolha').value = "";
-
-    populateFilters();
-    applyFilters();
+    ['filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => document.getElementById(id).value = "");
+    populateFilters(); applyFilters();
 });
-
 document.getElementById('filterCargo').addEventListener('change', () => {
-    document.getElementById('filterModalidade').value = "";
-    document.getElementById('filterFolha').value = "";
-
-    populateFilters();
-    applyFilters();
+    ['filterModalidade', 'filterFolha'].forEach(id => document.getElementById(id).value = "");
+    populateFilters(); applyFilters();
 });
-
 document.getElementById('filterModalidade').addEventListener('change', () => {
     document.getElementById('filterFolha').value = "";
-
-    populateFilters();
-    applyFilters();
+    populateFilters(); applyFilters();
 });
-
-document.getElementById('filterFolha').addEventListener('change', () => {
-    applyFilters();
-});
+document.getElementById('filterFolha').addEventListener('change', () => applyFilters());
 
 document.getElementById('btnClearFilters').addEventListener('click', () => {
-    ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha']
-        .forEach(id => document.getElementById(id).value = "");
-
-    populateFilters();
-    applyFilters();
+    ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => document.getElementById(id).value = "");
+    populateFilters(); applyFilters();
 });
 
 document.getElementById('btnSearchIndividual').addEventListener('click', executeIndividualSearch);
-
 document.getElementById('searchIndividualInput').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') executeIndividualSearch();
 });
@@ -726,16 +674,12 @@ function executeIndividualSearch() {
     const notFound = document.getElementById('individualNotFound');
 
     if (!query) {
-        panel.classList.add('hidden');
-        notFound.classList.add('hidden');
-        return;
+        panel.classList.add('hidden'); notFound.classList.add('hidden'); return;
     }
 
     const found = rawData.find(item => {
-        const keys = Object.keys(item);
-        const cpf = String(item[keys[10]] || '').toLowerCase();
-        const matricula = String(item[keys[6]] || '').toLowerCase();
-
+        const cpf = String(item['CPF'] || '').toLowerCase();
+        const matricula = String(item['Nº pessoal'] || '').toLowerCase();
         return cpf.includes(query) || matricula.includes(query);
     });
 
@@ -743,28 +687,27 @@ function executeIndividualSearch() {
         notFound.classList.add('hidden');
         panel.classList.remove('hidden');
 
-        const keys = Object.keys(found);
         document.getElementById('indNomeServidor').innerHTML =
-            `<i data-lucide="user-check" class="w-5 h-5 text-blue-900"></i> ${found[keys[7]] || 'Não Informado'}`;
+            `<i data-lucide="user-check" class="w-5 h-5 text-blue-900"></i> ${found['Nome do empregado']}`;
 
-        document.getElementById('indNTE').innerText = getNTE(found);
-        document.getElementById('indMunicipio').innerText = found[keys[1]] || '-';
-        document.getElementById('indUnidade').innerText = getUnidadeEscolar(found);
-        document.getElementById('indCargo').innerText = found[keys[14]] || '-';
-        document.getElementById('indModalidade').innerText = getModalidade(found);
+        document.getElementById('indNTE').innerText = found['NTE'];
+        document.getElementById('indMunicipio').innerText = found['Município'];
+        document.getElementById('indUnidade').innerText = found['Unid organizacional'];
+        document.getElementById('indCargo').innerText = found['Cargo'];
+        document.getElementById('indModalidade').innerText = found['Modalidade'];
 
-        document.getElementById('indAdmissao').innerText = formatDateBR(getAdmissaoVal(found));
-        document.getElementById('indFimContrato').innerText = formatDateBR(getFimContratoVal(found));
+        document.getElementById('indAdmissao').innerText = formatDateBR(found['ADMISSÃO']);
+        document.getElementById('indFimContrato').innerText = formatDateBR(found['Fim contrato']);
 
-        document.getElementById('indCPF').innerText = found[keys[10]] || '-';
-        document.getElementById('indTelefone').innerText = getTelefones(found);
-        document.getElementById('indMatricula').innerText = found[keys[6]] || '-';
+        document.getElementById('indCPF').innerText = found['CPF'];
+        
+        const telInfo = [found['TELEFONE'], found['CELULAR'], found['EMAIL']].filter(v => v && v !== 'nan' && v !== '-').join(' | ');
+        document.getElementById('indTelefone').innerText = telInfo || '-';
+        document.getElementById('indMatricula').innerText = found['Nº pessoal'];
 
-        const sitFolha = getSituacaoFolha(found);
+        const sitFolha = found['SITUAÇÃO ESCOLAR'];
         const badge = document.getElementById('indStatusFolhaBadge');
-
         badge.innerText = sitFolha;
-
         const sitUpper = String(sitFolha).toUpperCase();
 
         if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE')) {
@@ -772,12 +715,9 @@ function executeIndividualSearch() {
         } else {
             badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300";
         }
-
         lucide.createIcons();
-
     } else {
-        panel.classList.add('hidden');
-        notFound.classList.remove('hidden');
+        panel.classList.add('hidden'); notFound.classList.remove('hidden');
         lucide.createIcons();
     }
 }
@@ -791,35 +731,24 @@ function getFilteredData() {
     const folhaVal = document.getElementById('filterFolha').value;
 
     return rawData.filter(item => {
-        const keys = Object.keys(item);
-        const matchNTE = !nteVal || getNTE(item) === nteVal;
-        const matchMun = !munVal || item[keys[1]] === munVal;
-        const matchUnid = !unidVal || getUnidadeEscolar(item) === unidVal;
-        const matchCargo = !cargoVal || item[keys[14]] === cargoVal;
-        const matchMod = !modVal || getModalidade(item) === modVal;
-        const matchFolha = !folhaVal || getSituacaoFolha(item) === folhaVal;
-
-        return matchNTE && matchMun && matchUnid && matchCargo && matchMod && matchFolha;
+        return (!nteVal || item['NTE'] === nteVal) &&
+               (!munVal || item['Município'] === munVal) &&
+               (!unidVal || item['Unid organizacional'] === unidVal) &&
+               (!cargoVal || item['Cargo'] === cargoVal) &&
+               (!modVal || item['Modalidade'] === modVal) &&
+               (!folhaVal || item['SITUAÇÃO ESCOLAR'] === folhaVal);
     });
 }
 
 function applyFilters() {
-    const nteVal = document.getElementById('filterNTE').value;
-    const munVal = document.getElementById('filterMunicipio').value;
-    const unidVal = document.getElementById('filterUnidade').value;
-    const cargoVal = document.getElementById('filterCargo').value;
-    const modVal = document.getElementById('filterModalidade').value;
-    const folhaVal = document.getElementById('filterFolha').value;
-
-    const hasActiveFilter = nteVal || munVal || unidVal || cargoVal || modVal || folhaVal;
+    const hasActiveFilter = ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha']
+        .some(id => document.getElementById(id).value !== "");
 
     const filteredData = getFilteredData();
-
     updateKPIs(filteredData);
     renderCharts(filteredData);
 
     const detailedSection = document.getElementById('detailedSection');
-
     if (hasActiveFilter) {
         detailedSection.classList.remove('hidden');
         renderTable(filteredData);
@@ -830,34 +759,26 @@ function applyFilters() {
 
 document.getElementById('btnExportExcel').addEventListener('click', () => {
     const filteredData = getFilteredData();
+    if (filteredData.length === 0) { alert('Nenhum registro para exportar.'); return; }
 
-    if (filteredData.length === 0) {
-        alert('Nenhum registro para exportar.');
-        return;
-    }
-
-    const exportRows = filteredData.map(item => {
-        const keys = Object.keys(item);
-        return {
-            'Matrícula': item[keys[6]] || '-',
-            'Nome do Empregado': item[keys[7]] || '-',
-            'Situação Escolar': getSituacaoFolha(item),
-            'Cargo / Função': item[keys[14]] || '-',
-            'Modalidade': getModalidade(item),
-            'Unidade Organizacional': getUnidadeEscolar(item),
-            'Município': item[keys[1]] || '-',
-            'NTE': getNTE(item),
-            'Admissão': formatDateBR(getAdmissaoVal(item)),
-            'Fim do Contrato': formatDateBR(getFimContratoVal(item)),
-            'CPF': item[keys[10]] || '-',
-            'Contatos': getTelefones(item)
-        };
-    });
+    const exportRows = filteredData.map(item => ({
+        'Matrícula': item['Nº pessoal'],
+        'Nome do Empregado': item['Nome do empregado'],
+        'Situação Escolar': item['SITUAÇÃO ESCOLAR'],
+        'Cargo / Função': item['Cargo'],
+        'Modalidade': item['Modalidade'],
+        'Unidade Organizacional': item['Unid organizacional'],
+        'Município': item['Município'],
+        'NTE': item['NTE'],
+        'Admissão': formatDateBR(item['ADMISSÃO']),
+        'Fim do Contrato': formatDateBR(item['Fim contrato']),
+        'CPF': item['CPF'],
+        'E-mail/Telefone': [item['TELEFONE'], item['CELULAR'], item['EMAIL']].filter(Boolean).join(' | ')
+    }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportRows);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Resultado Consulta");
-
     XLSX.writeFile(workbook, `Consulta_REDA_SEC_${new Date().toISOString().slice(0, 10)}.xlsx`);
 });
 
@@ -865,131 +786,67 @@ function updateKPIs(data) {
     document.getElementById('kpiTotal').innerText = data.length.toLocaleString('pt-BR');
 
     const emFolhaCount = data.filter(i => {
-        const sit = String(getSituacaoFolha(i)).toUpperCase();
+        const sit = String(i['SITUAÇÃO ESCOLAR']).toUpperCase();
         return sit.includes('ATIVO') || sit.includes('SIM') || sit.includes('ATIVIDADE');
     }).length;
-
     document.getElementById('kpiEmFolha').innerText = emFolhaCount.toLocaleString('pt-BR');
 
-    const municipios = new Set(data.map(i => {
-        const keys = Object.keys(i);
-        return i[keys[1]];
-    }).filter(Boolean));
+    const municipios = new Set(data.map(i => i['Município']).filter(v => v && v !== '-'));
     document.getElementById('kpiMunicipios').innerText = municipios.size.toLocaleString('pt-BR');
 
-    const ntes = new Set(data.map(i => getNTE(i)).filter(Boolean));
+    const ntes = new Set(data.map(i => i['NTE']).filter(v => v && v !== '-'));
     document.getElementById('kpiNte').innerText = ntes.size.toLocaleString('pt-BR');
 }
 
 function renderCharts(data) {
     const cargoCounts = {};
-
     data.forEach(i => {
-        const keys = Object.keys(i);
-        const cargo = i[keys[14]] || 'Não Informado';
+        const cargo = i['Cargo'] || 'Não Informado';
         cargoCounts[cargo] = (cargoCounts[cargo] || 0) + 1;
     });
-
-    const topCargos = Object.entries(cargoCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10);
+    const topCargos = Object.entries(cargoCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
     if (chartCargosInstance) chartCargosInstance.destroy();
-
     chartCargosInstance = new Chart(document.getElementById('chartCargos'), {
         type: 'bar',
         data: {
             labels: topCargos.map(c => c[0]),
             datasets: [{
-                label: 'Quantidade de Servidores',
                 data: topCargos.map(c => c[1]),
                 backgroundColor: '#1e3a8a',
-                borderRadius: 6,
-                barThickness: 'flex',
-                maxBarThickness: 38
+                borderRadius: 6
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                    titleFont: { size: 13, weight: 'bold' },
-                    bodyFont: { size: 12 },
-                    padding: 10,
-                    cornerRadius: 8
-                }
-            },
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
             scales: {
-                x: {
-                    grid: { display: false },
-                    ticks: {
-                        font: { size: 10, weight: '600' },
-                        color: '#475569',
-                        maxRotation: 35,
-                        minRotation: 35,
-                        autoSkip: false
-                    }
-                },
-                y: {
-                    grid: { color: '#f1f5f9' },
-                    ticks: { font: { size: 11 }, color: '#64748b' }
-                }
+                x: { ticks: { font: { size: 10 }, maxRotation: 35, minRotation: 35 } },
+                y: { ticks: { font: { size: 11 } } }
             }
         }
     });
 
     const nteCounts = {};
-
     data.forEach(i => {
-        const nte = getNTE(i);
+        const nte = i['NTE'] || 'Não Informado';
         nteCounts[nte] = (nteCounts[nte] || 0) + 1;
     });
-
-    const topNTEs = Object.entries(nteCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 8);
+    const topNTEs = Object.entries(nteCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
 
     if (chartNTEInstance) chartNTEInstance.destroy();
-
     chartNTEInstance = new Chart(document.getElementById('chartNTE'), {
         type: 'doughnut',
         data: {
             labels: topNTEs.map(n => n[0]),
             datasets: [{
                 data: topNTEs.map(n => n[1]),
-                backgroundColor: [
-                    '#1e3a8a', '#dc2626', '#0284c7', '#d97706',
-                    '#059669', '#7c3aed', '#db2777', '#475569'
-                ],
-                borderWidth: 2,
-                borderColor: '#ffffff'
+                backgroundColor: ['#1e3a8a', '#dc2626', '#0284c7', '#d97706', '#059669', '#7c3aed', '#db2777', '#475569']
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '65%',
-            plugins: {
-                legend: {
-                    position: 'right',
-                    labels: {
-                        boxWidth: 12,
-                        font: { size: 11, weight: '500' },
-                        color: '#334155',
-                        padding: 12
-                    }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                    titleFont: { size: 13, weight: 'bold' },
-                    bodyFont: { size: 12 },
-                    padding: 10,
-                    cornerRadius: 8
-                }
-            }
+            responsive: true, maintainAspectRatio: false, cutout: '65%',
+            plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 11 } } } }
         }
     });
 }
@@ -997,42 +854,35 @@ function renderCharts(data) {
 function renderTable(data) {
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
-
-    document.getElementById('recordCount').innerText =
-        `Exibindo ${Math.min(100, data.length)} de ${data.length.toLocaleString('pt-BR')} registros`;
+    document.getElementById('recordCount').innerText = `Exibindo ${Math.min(100, data.length)} de ${data.length.toLocaleString('pt-BR')} registros`;
 
     data.slice(0, 100).forEach(row => {
-        const keys = Object.keys(row);
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50/80 border-b border-slate-100 transition-colors';
 
-        const situacaoFolha = getSituacaoFolha(row);
-        const sitUpper = String(situacaoFolha).toUpperCase();
-
-        let badgeFolha = `<span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[10px] font-semibold border border-slate-300">${situacaoFolha}</span>`;
-
+        const sit = row['SITUAÇÃO ESCOLAR'];
+        const sitUpper = String(sit).toUpperCase();
+        let badge = `<span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[10px] font-semibold">${sit}</span>`;
         if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE')) {
-            badgeFolha = `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded text-[10px] font-bold">${situacaoFolha}</span>`;
+            badge = `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[10px] font-bold">${sit}</span>`;
         } else if (sitUpper.includes('INATIVO') || sitUpper.includes('EXCLUIDO') || sitUpper.includes('NAO')) {
-            badgeFolha = `<span class="bg-red-100 text-red-800 border border-red-300 px-2 py-0.5 rounded text-[10px] font-bold">${situacaoFolha}</span>`;
+            badge = `<span class="bg-red-100 text-red-800 px-2 py-0.5 rounded text-[10px] font-bold">${sit}</span>`;
         }
 
         tr.innerHTML = `
-            <td class="px-4 py-3 font-mono text-slate-800 font-bold">${row[keys[6]] || '-'}</td>
-            <td class="px-4 py-3 font-bold text-blue-950">${row[keys[7]] || '-'}</td>
-            <td class="px-4 py-3">${badgeFolha}</td>
-            <td class="px-4 py-3">${row[keys[14]] || '-'}</td>
-            <td class="px-4 py-3"><span class="bg-blue-50 text-blue-900 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-semibold">${getModalidade(row)}</span></td>
-            <td class="px-4 py-3">${getUnidadeEscolar(row)}</td>
-            <td class="px-4 py-3">${row[keys[1]] || '-'}</td>
-            <td class="px-4 py-3 font-semibold text-slate-800">${getNTE(row)}</td>
-            <td class="px-4 py-3 font-medium text-slate-700">${formatDateBR(getAdmissaoVal(row))}</td>
-            <td class="px-4 py-3 font-medium text-red-700">${formatDateBR(getFimContratoVal(row))}</td>
+            <td class="px-4 py-3 font-mono font-bold">${row['Nº pessoal']}</td>
+            <td class="px-4 py-3 font-bold text-blue-950">${row['Nome do empregado']}</td>
+            <td class="px-4 py-3">${badge}</td>
+            <td class="px-4 py-3">${row['Cargo']}</td>
+            <td class="px-4 py-3"><span class="bg-blue-50 text-blue-900 px-2 py-0.5 rounded text-[10px] font-semibold">${row['Modalidade']}</span></td>
+            <td class="px-4 py-3">${row['Unid organizacional']}</td>
+            <td class="px-4 py-3">${row['Município']}</td>
+            <td class="px-4 py-3 font-semibold">${row['NTE']}</td>
+            <td class="px-4 py-3">${formatDateBR(row['ADMISSÃO'])}</td>
+            <td class="px-4 py-3 text-red-700 font-medium">${formatDateBR(row['Fim contrato'])}</td>
         `;
-
         tbody.appendChild(tr);
     });
-
     lucide.createIcons();
 }
 </script>
