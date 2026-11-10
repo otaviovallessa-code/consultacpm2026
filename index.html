@@ -124,7 +124,6 @@
                 </div>
             </div>
 
-            <!-- CARD ATUALIZADO DE "EM ATIVIDADE" PARA "TOTAL EM FOLHA" -->
             <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-emerald-600 flex items-center justify-between">
                 <div>
                     <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Total em Folha</p>
@@ -156,7 +155,7 @@
             </div>
         </div>
 
-        <!-- Filtros Globais (com suporte a digitação por Datalist) -->
+        <!-- Filtros Globais em Cascata (Selects nativos otimizados para celulares e desktop) -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-900 via-red-600 to-yellow-500"></div>
 
@@ -165,7 +164,7 @@
                     <span class="p-2 bg-red-50 text-red-600 rounded-lg">
                         <i data-lucide="filter" class="w-4 h-4"></i>
                     </span>
-                    Filtros Globais de Pesquisa
+                    Filtros Globais de Pesquisa (Em Cascata)
                 </h2>
 
                 <button id="btnClearFilters" class="text-xs text-slate-600 hover:text-red-600 font-bold transition-all flex items-center gap-1.5 bg-slate-100 hover:bg-red-50 px-3.5 py-2 rounded-xl border border-slate-200 hover:border-red-200 active:scale-95">
@@ -178,38 +177,44 @@
 
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-2">NTE</label>
-                    <input type="text" id="filterNTE" list="dlNTE" placeholder="Todos os NTEs" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
-                    <datalist id="dlNTE"></datalist>
+                    <select id="filterNTE" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
+                        <option value="">Todos os NTEs</option>
+                    </select>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-2">Município</label>
-                    <input type="text" id="filterMunicipio" list="dlMunicipio" placeholder="Todos os Municípios" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
-                    <datalist id="dlMunicipio"></datalist>
+                    <select id="filterMunicipio" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
+                        <option value="">Todos os Municípios</option>
+                    </select>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-2">Unidade Escolar</label>
-                    <input type="text" id="filterUnidade" list="dlUnidade" placeholder="Todas as Unidades" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
-                    <datalist id="dlUnidade"></datalist>
+                    <select id="filterUnidade" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
+                        <option value="">Todas as Unidades</option>
+                    </select>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-2">Cargo / Função</label>
-                    <input type="text" id="filterCargo" list="dlCargo" placeholder="Todos os Cargos" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
-                    <datalist id="dlCargo"></datalist>
+                    <select id="filterCargo" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
+                        <option value="">Todos os Cargos</option>
+                    </select>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-2">Modalidade</label>
-                    <input type="text" id="filterModalidade" list="dlModalidade" placeholder="Todas as Modalidades" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
-                    <datalist id="dlModalidade"></datalist>
+                    <select id="filterModalidade" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
+                        <option value="">Todas as Modalidades</option>
+                    </select>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-2">Situação de Folha</label>
-                    <input type="text" id="filterFolha" list="dlFolha" placeholder="Todas as Situações" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
-                    <datalist id="dlFolha"></datalist>
+                    <select id="filterFolha" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
+                        <option value="">Todas as Situações</option>
+                    </select>
                 </div>
 
             </div>
@@ -487,10 +492,8 @@ function cleanAndNormalizeData(jsonRows) {
         const codsec = getVal(['Codsec', 'Cod. SEC'], 3);
         const unidadeOrg = getVal(['Unid organizacional', 'UNIDADE ESCOLAR', 'Unidade Organizacional'], 4);
         
-        // Garante a busca exata da Coluna I (índice 8)
         let situacaoFolha = getVal(['SITUAÇÃO FOLHA', 'Situação Folha', 'Situacao Folha', 'SITUAÇÃO ESCOLAR', 'Situação Escolar'], 8);
         if (!situacaoFolha) {
-            // Varredura de fallback caso as colunas estejam deslocadas
             const keyFolha = keys.find(k => k.toLowerCase().includes('folha') || k.toLowerCase().includes('situa'));
             if (keyFolha && row[keyFolha]) situacaoFolha = String(row[keyFolha]).trim();
         }
@@ -570,7 +573,7 @@ function formatDateBR(val) {
     return strVal;
 }
 
-// Leitura do Excel e Gravação automática no Firebase Realtime Database
+// Leitura do Excel e Gravação no Firebase
 document.getElementById('excelFile').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -604,7 +607,6 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
                 data: rawData
             };
 
-            // Salva no Firebase Nuvem
             dbRef.set(updateInfo).then(() => {
                 console.log("Dados salvos com sucesso no Firebase!");
             }).catch((err) => {
@@ -618,7 +620,7 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
             }
 
             displayUpdateInfo(file.name, updateInfo.date);
-            populateDatalists();
+            updateFilterOptions();
             applyFilters();
             alert('Planilha carregada e gravada na nuvem do Firebase com sucesso!');
 
@@ -631,7 +633,7 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
     reader.readAsArrayBuffer(file);
 });
 
-// Botão de Limpeza da Nuvem (Exclusivo ADM)
+// Limpeza da Nuvem
 document.getElementById('btnClearCloud').addEventListener('click', function() {
     if (!isAdminLoggedIn) {
         alert('Acesso negado. Apenas o Administrador pode limpar os dados.');
@@ -656,6 +658,7 @@ document.getElementById('btnClearCloud').addEventListener('click', function() {
 
             updateKPIs([]);
             renderCharts([]);
+            updateFilterOptions();
             lucide.createIcons();
             alert('Dados apagados da nuvem com sucesso!');
         }).catch(err => {
@@ -670,14 +673,14 @@ function displayUpdateInfo(name, dateStr) {
     lucide.createIcons();
 }
 
-// Carrega os dados da nuvem do Firebase ao abrir a página
+// Carrega os dados do Firebase ao iniciar
 window.addEventListener('DOMContentLoaded', () => {
     dbRef.once('value', (snapshot) => {
         const cloudData = snapshot.val();
         if (cloudData && cloudData.data) {
             rawData = cloudData.data;
             displayUpdateInfo(cloudData.fileName, cloudData.date);
-            populateDatalists();
+            updateFilterOptions();
             applyFilters();
         } else {
             const cached = localStorage.getItem('reda_cache');
@@ -688,7 +691,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     if (parsed.fileName && parsed.date) {
                         displayUpdateInfo(parsed.fileName, parsed.date);
                     }
-                    populateDatalists();
+                    updateFilterOptions();
                     applyFilters();
                 } catch (e) {
                     console.error('Erro ao carregar cache salvo', e);
@@ -696,32 +699,78 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
     }, (error) => {
-        console.warn("Erro ao ler do Firebase, tentando cache local:", error);
+        console.warn("Erro ao ler do Firebase:", error);
     });
 });
 
-function populateDatalists() {
-    const fillDl = (dlId, key) => {
-        const dl = document.getElementById(dlId);
-        if (!dl) return;
-        const vals = [...new Set(rawData.map(item => item[key]).filter(v => v && v !== '-'))].sort();
-        dl.innerHTML = vals.map(v => `<option value="${v}">`).join('');
-    };
+// Lógica de Filtros em Cascata (Sequenciais)
+function updateFilterOptions() {
+    const nteVal = document.getElementById('filterNTE').value;
+    const munVal = document.getElementById('filterMunicipio').value;
+    const unidVal = document.getElementById('filterUnidade').value;
+    const cargoVal = document.getElementById('filterCargo').value;
+    const modVal = document.getElementById('filterModalidade').value;
+    const folhaVal = document.getElementById('filterFolha').value;
 
-    fillDl('dlNTE', 'NTE');
-    fillDl('dlMunicipio', 'Município');
-    fillDl('dlUnidade', 'Unid organizacional');
-    fillDl('dlCargo', 'Cargo');
-    fillDl('dlModalidade', 'Modalidade');
-    fillDl('dlFolha', 'SITUAÇÃO FOLHA');
+    // Base de dados para filtragem em cascata
+    let currentFiltered = rawData;
+
+    // Popula NTEs (sempre todos os disponíveis)
+    const ntes = [...new Set(rawData.map(i => i['NTE']).filter(v => v && v !== '-'))].sort();
+    fillSelect('filterNTE', ntes, nteVal, "Todos os NTEs");
+
+    // Filtra por NTE para popular Municípios
+    if (nteVal) currentFiltered = currentFiltered.filter(i => i['NTE'] === nteVal);
+    const municipios = [...new Set(currentFiltered.map(i => i['Município']).filter(v => v && v !== '-'))].sort();
+    fillSelect('filterMunicipio', municipios, munVal, "Todos os Municípios");
+
+    // Filtra por Município para popular Unidades
+    if (munVal) currentFiltered = currentFiltered.filter(i => i['Município'] === munVal);
+    const unidades = [...new Set(currentFiltered.map(i => i['Unid organizacional']).filter(v => v && v !== '-'))].sort();
+    fillSelect('filterUnidade', unidades, unidVal, "Todas as Unidades");
+
+    // Filtra por Unidade para popular Cargos
+    if (unidVal) currentFiltered = currentFiltered.filter(i => i['Unid organizacional'] === unidVal);
+    const cargos = [...new Set(currentFiltered.map(i => i['Cargo']).filter(v => v && v !== '-'))].sort();
+    fillSelect('filterCargo', cargos, cargoVal, "Todos os Cargos");
+
+    // Filtra por Cargo para popular Modalidades
+    if (cargoVal) currentFiltered = currentFiltered.filter(i => i['Cargo'] === cargoVal);
+    const modalidades = [...new Set(currentFiltered.map(i => i['Modalidade']).filter(v => v && v !== '-'))].sort();
+    fillSelect('filterModalidade', modalidades, modVal, "Todas as Modalidades");
+
+    // Filtra por Modalidade para popular Situações de Folha
+    if (modVal) currentFiltered = currentFiltered.filter(i => i['Modalidade'] === modVal);
+    const folhas = [...new Set(currentFiltered.map(i => i['SITUAÇÃO FOLHA']).filter(v => v && v !== '-'))].sort();
+    fillSelect('filterFolha', folhas, folhaVal, "Todas as Situações");
 }
 
+function fillSelect(elementId, items, selectedValue, defaultText) {
+    const select = document.getElementById(elementId);
+    select.innerHTML = `<option value="">${defaultText}</option>`;
+    items.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item;
+        option.textContent = item;
+        if (item === selectedValue) option.selected = true;
+        select.appendChild(option);
+    });
+}
+
+// Eventos de alteração nos selects em cascata
 ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => {
-    document.getElementById(id).addEventListener('input', applyFilters);
+    document.getElementById(id).addEventListener('change', () => {
+        updateFilterOptions();
+        applyFilters();
+    });
 });
 
+// Limpar Filtros
 document.getElementById('btnClearFilters').addEventListener('click', () => {
-    ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => document.getElementById(id).value = "");
+    ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => {
+        document.getElementById(id).value = "";
+    });
+    updateFilterOptions();
     applyFilters();
 });
 
@@ -785,26 +834,26 @@ function executeIndividualSearch() {
 }
 
 function getFilteredData() {
-    const nteVal = document.getElementById('filterNTE').value.trim().toLowerCase();
-    const munVal = document.getElementById('filterMunicipio').value.trim().toLowerCase();
-    const unidVal = document.getElementById('filterUnidade').value.trim().toLowerCase();
-    const cargoVal = document.getElementById('filterCargo').value.trim().toLowerCase();
-    const modVal = document.getElementById('filterModalidade').value.trim().toLowerCase();
-    const folhaVal = document.getElementById('filterFolha').value.trim().toLowerCase();
+    const nteVal = document.getElementById('filterNTE').value;
+    const munVal = document.getElementById('filterMunicipio').value;
+    const unidVal = document.getElementById('filterUnidade').value;
+    const cargoVal = document.getElementById('filterCargo').value;
+    const modVal = document.getElementById('filterModalidade').value;
+    const folhaVal = document.getElementById('filterFolha').value;
 
     return rawData.filter(item => {
-        return (!nteVal || String(item['NTE']).toLowerCase().includes(nteVal)) &&
-               (!munVal || String(item['Município']).toLowerCase().includes(munVal)) &&
-               (!unidVal || String(item['Unid organizacional']).toLowerCase().includes(unidVal)) &&
-               (!cargoVal || String(item['Cargo']).toLowerCase().includes(cargoVal)) &&
-               (!modVal || String(item['Modalidade']).toLowerCase().includes(modVal)) &&
-               (!folhaVal || String(item['SITUAÇÃO FOLHA']).toLowerCase().includes(folhaVal));
+        return (!nteVal || item['NTE'] === nteVal) &&
+               (!munVal || item['Município'] === munVal) &&
+               (!unidVal || item['Unid organizacional'] === unidVal) &&
+               (!cargoVal || item['Cargo'] === cargoVal) &&
+               (!modVal || item['Modalidade'] === modVal) &&
+               (!folhaVal || item['SITUAÇÃO FOLHA'] === folhaVal);
     });
 }
 
 function applyFilters() {
     const hasActiveFilter = ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha']
-        .some(id => document.getElementById(id).value.trim() !== "");
+        .some(id => document.getElementById(id).value !== "");
 
     const filteredData = getFilteredData();
     updateKPIs(filteredData);
