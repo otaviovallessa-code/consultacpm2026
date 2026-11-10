@@ -124,9 +124,10 @@
                 </div>
             </div>
 
+            <!-- CARD ATUALIZADO DE "EM ATIVIDADE" PARA "TOTAL EM FOLHA" -->
             <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-emerald-600 flex items-center justify-between">
                 <div>
-                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Em Atividade</p>
+                    <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Total em Folha</p>
                     <h3 id="kpiEmFolha" class="text-3xl font-black text-emerald-700 mt-1">0</h3>
                 </div>
                 <div class="p-4 bg-emerald-50 text-emerald-700 rounded-xl shadow-inner">
@@ -155,7 +156,7 @@
             </div>
         </div>
 
-        <!-- Filtros Globais (Sem menção de colunas) -->
+        <!-- Filtros Globais (com suporte a digitação por Datalist) -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-900 via-red-600 to-yellow-500"></div>
 
@@ -177,44 +178,38 @@
 
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-2">NTE</label>
-                    <select id="filterNTE" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
-                        <option value="">Todos os NTEs</option>
-                    </select>
+                    <input type="text" id="filterNTE" list="dlNTE" placeholder="Todos os NTEs" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
+                    <datalist id="dlNTE"></datalist>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-2">Município</label>
-                    <select id="filterMunicipio" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
-                        <option value="">Todos os Municípios</option>
-                    </select>
+                    <input type="text" id="filterMunicipio" list="dlMunicipio" placeholder="Todos os Municípios" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
+                    <datalist id="dlMunicipio"></datalist>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-2">Unidade Escolar</label>
-                    <select id="filterUnidade" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
-                        <option value="">Todas as Unidades</option>
-                    </select>
+                    <input type="text" id="filterUnidade" list="dlUnidade" placeholder="Todas as Unidades" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
+                    <datalist id="dlUnidade"></datalist>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-2">Cargo / Função</label>
-                    <select id="filterCargo" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
-                        <option value="">Todos os Cargos</option>
-                    </select>
+                    <input type="text" id="filterCargo" list="dlCargo" placeholder="Todos os Cargos" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
+                    <datalist id="dlCargo"></datalist>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-2">Modalidade</label>
-                    <select id="filterModalidade" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
-                        <option value="">Todas as Modalidades</option>
-                    </select>
+                    <input type="text" id="filterModalidade" list="dlModalidade" placeholder="Todas as Modalidades" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
+                    <datalist id="dlModalidade"></datalist>
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-600 mb-2">Situação de Folha</label>
-                    <select id="filterFolha" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
-                        <option value="">Todas as Situações</option>
-                    </select>
+                    <input type="text" id="filterFolha" list="dlFolha" placeholder="Todas as Situações" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
+                    <datalist id="dlFolha"></datalist>
                 </div>
 
             </div>
@@ -492,8 +487,13 @@ function cleanAndNormalizeData(jsonRows) {
         const codsec = getVal(['Codsec', 'Cod. SEC'], 3);
         const unidadeOrg = getVal(['Unid organizacional', 'UNIDADE ESCOLAR', 'Unidade Organizacional'], 4);
         
-        // Mapeia especificamente a Coluna I (index 8) para Situação de Folha
-        const situacaoFolha = getVal(['SITUAÇÃO FOLHA', 'Situação Folha', 'Situacao Folha', 'SITUAÇÃO ESCOLAR'], 8);
+        // Garante a busca exata da Coluna I (índice 8)
+        let situacaoFolha = getVal(['SITUAÇÃO FOLHA', 'Situação Folha', 'Situacao Folha', 'SITUAÇÃO ESCOLAR', 'Situação Escolar'], 8);
+        if (!situacaoFolha) {
+            // Varredura de fallback caso as colunas estejam deslocadas
+            const keyFolha = keys.find(k => k.toLowerCase().includes('folha') || k.toLowerCase().includes('situa'));
+            if (keyFolha && row[keyFolha]) situacaoFolha = String(row[keyFolha]).trim();
+        }
         
         const numPessoal = getVal(['Nº pessoal', 'Matrícula', 'N_ pessoal'], 6);
         const nomeEmpregado = getVal(['Nome do empregado', 'Nome'], 7);
@@ -618,7 +618,7 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
             }
 
             displayUpdateInfo(file.name, updateInfo.date);
-            populateFilters();
+            populateDatalists();
             applyFilters();
             alert('Planilha carregada e gravada na nuvem do Firebase com sucesso!');
 
@@ -647,7 +647,7 @@ document.getElementById('btnClearCloud').addEventListener('click', function() {
             document.getElementById('lastUpdateLabel').innerHTML = '<i data-lucide="clock" class="w-3.5 h-3.5"></i> Aguardando dados...';
             
             ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => {
-                document.getElementById(id).innerHTML = '<option value="">Todos os itens</option>';
+                document.getElementById(id).value = '';
             });
 
             document.getElementById('detailedSection').classList.add('hidden');
@@ -677,10 +677,9 @@ window.addEventListener('DOMContentLoaded', () => {
         if (cloudData && cloudData.data) {
             rawData = cloudData.data;
             displayUpdateInfo(cloudData.fileName, cloudData.date);
-            populateFilters();
+            populateDatalists();
             applyFilters();
         } else {
-            // Fallback para o cache local caso a nuvem esteja vazia
             const cached = localStorage.getItem('reda_cache');
             if (cached) {
                 try {
@@ -689,7 +688,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     if (parsed.fileName && parsed.date) {
                         displayUpdateInfo(parsed.fileName, parsed.date);
                     }
-                    populateFilters();
+                    populateDatalists();
                     applyFilters();
                 } catch (e) {
                     console.error('Erro ao carregar cache salvo', e);
@@ -701,88 +700,29 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function populateFilters() {
-    const nteSelect = document.getElementById('filterNTE');
-    const munSelect = document.getElementById('filterMunicipio');
-    const unidSelect = document.getElementById('filterUnidade');
-    const cargoSelect = document.getElementById('filterCargo');
-    const modSelect = document.getElementById('filterModalidade');
-    const folhaSelect = document.getElementById('filterFolha');
+function populateDatalists() {
+    const fillDl = (dlId, key) => {
+        const dl = document.getElementById(dlId);
+        if (!dl) return;
+        const vals = [...new Set(rawData.map(item => item[key]).filter(v => v && v !== '-'))].sort();
+        dl.innerHTML = vals.map(v => `<option value="${v}">`).join('');
+    };
 
-    const selectedNTE = nteSelect.value;
-    const selectedMun = munSelect.value;
-    const selectedUnid = unidSelect.value;
-    const selectedCargo = cargoSelect.value;
-    const selectedMod = modSelect.value;
-    const selectedFolha = folhaSelect.value;
-
-    const ntes = [...new Set(rawData.map(item => item['NTE']).filter(v => v && v !== '-'))].sort();
-    fillSelect('filterNTE', ntes, selectedNTE);
-
-    let dataForMun = rawData;
-    if (selectedNTE) dataForMun = rawData.filter(item => item['NTE'] === selectedNTE);
-    const municipios = [...new Set(dataForMun.map(item => item['Município']).filter(v => v && v !== '-'))].sort();
-    fillSelect('filterMunicipio', municipios, municipios.includes(selectedMun) ? selectedMun : "");
-
-    let dataForUnid = dataForMun;
-    if (selectedMun) dataForUnid = dataForMun.filter(item => item['Município'] === selectedMun);
-    const unidades = [...new Set(dataForUnid.map(item => item['Unid organizacional']).filter(v => v && v !== '-'))].sort();
-    fillSelect('filterUnidade', unidades, unidades.includes(selectedUnid) ? selectedUnid : "");
-
-    let dataForCargo = dataForUnid;
-    if (selectedUnid) dataForCargo = dataForUnid.filter(item => item['Unid organizacional'] === selectedUnid);
-    const cargos = [...new Set(dataForCargo.map(item => item['Cargo']).filter(v => v && v !== '-'))].sort();
-    fillSelect('filterCargo', cargos, cargos.includes(selectedCargo) ? selectedCargo : "");
-
-    let dataForMod = dataForCargo;
-    if (selectedCargo) dataForMod = dataForCargo.filter(item => item['Cargo'] === selectedCargo);
-    const modalidades = [...new Set(dataForMod.map(item => item['Modalidade']).filter(v => v && v !== '-'))].sort();
-    fillSelect('filterModalidade', modalidades, modalidades.includes(selectedMod) ? selectedMod : "");
-
-    let dataForFolha = dataForMod;
-    if (selectedMod) dataForFolha = dataForMod.filter(item => item['Modalidade'] === selectedMod);
-    const folhas = [...new Set(dataForFolha.map(item => item['SITUAÇÃO FOLHA']).filter(v => v && v !== '-'))].sort();
-    fillSelect('filterFolha', folhas, folhas.includes(selectedFolha) ? selectedFolha : "");
+    fillDl('dlNTE', 'NTE');
+    fillDl('dlMunicipio', 'Município');
+    fillDl('dlUnidade', 'Unid organizacional');
+    fillDl('dlCargo', 'Cargo');
+    fillDl('dlModalidade', 'Modalidade');
+    fillDl('dlFolha', 'SITUAÇÃO FOLHA');
 }
 
-function fillSelect(elementId, items, selectedValue = "") {
-    const select = document.getElementById(elementId);
-    const defaultOptionText = select.options[0] ? select.options[0].text : "Selecione";
-    select.innerHTML = `<option value="">${defaultOptionText}</option>`;
-    items.forEach(item => {
-        const option = document.createElement('option');
-        option.value = item;
-        option.textContent = item;
-        if (item === selectedValue) option.selected = true;
-        select.appendChild(option);
-    });
-}
-
-document.getElementById('filterNTE').addEventListener('change', () => {
-    ['filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => document.getElementById(id).value = "");
-    populateFilters(); applyFilters();
+['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => {
+    document.getElementById(id).addEventListener('input', applyFilters);
 });
-document.getElementById('filterMunicipio').addEventListener('change', () => {
-    ['filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => document.getElementById(id).value = "");
-    populateFilters(); applyFilters();
-});
-document.getElementById('filterUnidade').addEventListener('change', () => {
-    ['filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => document.getElementById(id).value = "");
-    populateFilters(); applyFilters();
-});
-document.getElementById('filterCargo').addEventListener('change', () => {
-    ['filterModalidade', 'filterFolha'].forEach(id => document.getElementById(id).value = "");
-    populateFilters(); applyFilters();
-});
-document.getElementById('filterModalidade').addEventListener('change', () => {
-    document.getElementById('filterFolha').value = "";
-    populateFilters(); applyFilters();
-});
-document.getElementById('filterFolha').addEventListener('change', () => applyFilters());
 
 document.getElementById('btnClearFilters').addEventListener('click', () => {
     ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => document.getElementById(id).value = "");
-    populateFilters(); applyFilters();
+    applyFilters();
 });
 
 document.getElementById('btnSearchIndividual').addEventListener('click', executeIndividualSearch);
@@ -827,12 +767,12 @@ function executeIndividualSearch() {
         document.getElementById('indTelefone').innerText = telInfo || '-';
         document.getElementById('indMatricula').innerText = found['Nº pessoal'];
 
-        const sitFolha = found['SITUAÇÃO FOLHA'];
+        const sitFolha = found['SITUAÇÃO FOLHA'] || '-';
         const badge = document.getElementById('indStatusFolhaBadge');
         badge.innerText = sitFolha;
         const sitUpper = String(sitFolha).toUpperCase();
 
-        if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE')) {
+        if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE') || sitUpper.includes('EM FOLHA')) {
             badge.className = "px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
         } else {
             badge.className = "px-4 py-1.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300";
@@ -845,26 +785,26 @@ function executeIndividualSearch() {
 }
 
 function getFilteredData() {
-    const nteVal = document.getElementById('filterNTE').value;
-    const munVal = document.getElementById('filterMunicipio').value;
-    const unidVal = document.getElementById('filterUnidade').value;
-    const cargoVal = document.getElementById('filterCargo').value;
-    const modVal = document.getElementById('filterModalidade').value;
-    const folhaVal = document.getElementById('filterFolha').value;
+    const nteVal = document.getElementById('filterNTE').value.trim().toLowerCase();
+    const munVal = document.getElementById('filterMunicipio').value.trim().toLowerCase();
+    const unidVal = document.getElementById('filterUnidade').value.trim().toLowerCase();
+    const cargoVal = document.getElementById('filterCargo').value.trim().toLowerCase();
+    const modVal = document.getElementById('filterModalidade').value.trim().toLowerCase();
+    const folhaVal = document.getElementById('filterFolha').value.trim().toLowerCase();
 
     return rawData.filter(item => {
-        return (!nteVal || item['NTE'] === nteVal) &&
-               (!munVal || item['Município'] === munVal) &&
-               (!unidVal || item['Unid organizacional'] === unidVal) &&
-               (!cargoVal || item['Cargo'] === cargoVal) &&
-               (!modVal || item['Modalidade'] === modVal) &&
-               (!folhaVal || item['SITUAÇÃO FOLHA'] === folhaVal);
+        return (!nteVal || String(item['NTE']).toLowerCase().includes(nteVal)) &&
+               (!munVal || String(item['Município']).toLowerCase().includes(munVal)) &&
+               (!unidVal || String(item['Unid organizacional']).toLowerCase().includes(unidVal)) &&
+               (!cargoVal || String(item['Cargo']).toLowerCase().includes(cargoVal)) &&
+               (!modVal || String(item['Modalidade']).toLowerCase().includes(modVal)) &&
+               (!folhaVal || String(item['SITUAÇÃO FOLHA']).toLowerCase().includes(folhaVal));
     });
 }
 
 function applyFilters() {
     const hasActiveFilter = ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha']
-        .some(id => document.getElementById(id).value !== "");
+        .some(id => document.getElementById(id).value.trim() !== "");
 
     const filteredData = getFilteredData();
     updateKPIs(filteredData);
@@ -909,7 +849,7 @@ function updateKPIs(data) {
 
     const emFolhaCount = data.filter(i => {
         const sit = String(i['SITUAÇÃO FOLHA']).toUpperCase();
-        return sit.includes('ATIVO') || sit.includes('SIM') || sit.includes('ATIVIDADE');
+        return sit.includes('ATIVO') || sit.includes('SIM') || sit.includes('ATIVIDADE') || sit.includes('EM FOLHA');
     }).length;
     document.getElementById('kpiEmFolha').innerText = emFolhaCount.toLocaleString('pt-BR');
 
@@ -982,10 +922,10 @@ function renderTable(data) {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50/80 border-b border-slate-100 transition-colors';
 
-        const sit = row['SITUAÇÃO FOLHA'];
+        const sit = row['SITUAÇÃO FOLHA'] || '-';
         const sitUpper = String(sit).toUpperCase();
         let badge = `<span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg text-[10px] font-semibold">${sit}</span>`;
-        if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE')) {
+        if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE') || sitUpper.includes('EM FOLHA')) {
             badge = `<span class="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg text-[10px] font-bold">${sit}</span>`;
         } else if (sitUpper.includes('INATIVO') || sitUpper.includes('EXCLUIDO') || sitUpper.includes('NAO')) {
             badge = `<span class="bg-red-100 text-red-800 px-2.5 py-1 rounded-lg text-[10px] font-bold">${sit}</span>`;
