@@ -45,7 +45,7 @@
         </span>
         <span class="text-blue-300 text-[11px] font-medium hidden sm:inline flex items-center gap-1">
             <i data-lucide="layers" class="w-3.5 h-3.5"></i>
-            Gestão e Monitoramento REDA
+            Gestão e Monitoramento REDA (Nuvem)
         </span>
     </div>
 
@@ -383,6 +383,25 @@ let rawData = [];
 let chartCargosInstance = null;
 let chartNTEInstance = null;
 
+// Função auxiliar para sanitizar as chaves e evitar erros em bancos de dados (como Firebase)
+function sanitizeKeys(obj) {
+    if (typeof obj !== 'object' || obj === null) return obj;
+    
+    if (Array.isArray(obj)) {
+        return obj.map(item => sanitizeKeys(item));
+    }
+    
+    const sanitized = {};
+    for (let key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            // Substitui caracteres inválidos como pontos (.) por sublinhado (_)
+            const cleanKey = key.replace(/[.#$[\]]/g, '_');
+            sanitized[cleanKey] = sanitizeKeys(obj[key]);
+        }
+    }
+    return sanitized;
+}
+
 function getRowVal(row, possibleKeys) {
     for (let k of possibleKeys) {
         if (row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== '') {
@@ -421,7 +440,7 @@ function getModalidade(row) {
 
 function getUnidadeEscolar(row) {
     const val = getRowVal(row, [
-        'Desc.Unid.organizacional', 'Unidade Organizacional', 'Unidade Escolar', 'ESCOLA',
+        'Desc_Unid_organizacional', 'Desc.Unid.organizacional', 'Unidade Organizacional', 'Unidade Escolar', 'ESCOLA',
         'e', 'E', '__EMPTY_4', 'f', 'F', '__EMPTY_5', 'g', 'G', '__EMPTY_6'
     ]);
     return val || '-';
@@ -491,10 +510,13 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
             const firstSheet = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[firstSheet];
 
-            rawData = XLSX.utils.sheet_to_json(worksheet, {
+            let tempRawData = XLSX.utils.sheet_to_json(worksheet, {
                 raw: false,
                 dateNF: 'dd/mm/yyyy'
             });
+
+            // Aplica a sanitização para remover caracteres proibidos em chaves (como pontos)
+            rawData = sanitizeKeys(tempRawData);
 
             const now = new Date();
 
@@ -842,7 +864,6 @@ function updateKPIs(data) {
 }
 
 function renderCharts(data) {
-    // 1. Gráfico de Cargos (Com tooltips melhorados e rotação limpa)
     const cargoCounts = {};
 
     data.forEach(i => {
@@ -873,9 +894,7 @@ function renderCharts(data) {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: false
-                },
+                legend: { display: false },
                 tooltip: {
                     backgroundColor: 'rgba(15, 23, 42, 0.9)',
                     titleFont: { size: 13, weight: 'bold' },
@@ -903,7 +922,6 @@ function renderCharts(data) {
         }
     });
 
-    // 2. Gráfico por NTE (Com legenda lateral limpa e clara)
     const nteCounts = {};
 
     data.forEach(i => {
