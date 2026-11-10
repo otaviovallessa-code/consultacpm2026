@@ -155,7 +155,7 @@
             </div>
         </div>
 
-        <!-- Filtros Globais -->
+        <!-- Filtros Globais (Layout Aprimorado) -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-900 via-red-600 to-yellow-500"></div>
 
@@ -167,7 +167,7 @@
                     Filtros Globais de Pesquisa
                 </h2>
 
-                <button id="btnClearFilters" class="text-xs text-slate-600 hover:text-red-600 font-bold transition-all flex items-center gap-1.5 bg-slate-100 hover:bg-red-50 px-3.5 py-2 rounded-xl border border-slate-200 hover:border-red-200 active:scale-95">
+                <button id="btnClearFilters" class="text-xs text-slate-600 hover:text-red-600 font-bold transition-all flex items-center gap-1.5 bg-slate-100 hover:bg-red-50 px-3.5 py-2 rounded-xl border border-slate-200 hover:border-red-200 active:scale-95 shadow-sm">
                     <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
                     Limpar Filtros
                 </button>
@@ -175,39 +175,57 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">NTE</label>
-                    <input type="text" id="filterNTE" list="dlNTE" placeholder="Todos os NTEs" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium" autocomplete="off">
+                <div class="relative group">
+                    <label class="block text-xs font-bold text-slate-700 mb-2 flex items-center justify-between">
+                        <span>NTE</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                    </label>
+                    <input type="text" id="filterNTE" list="dlNTE" placeholder="Todos os NTEs" class="w-full text-xs bg-slate-50/80 hover:bg-white border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium shadow-sm" autocomplete="off">
                     <datalist id="dlNTE"></datalist>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">Município</label>
-                    <input type="text" id="filterMunicipio" list="dlMunicipio" placeholder="Todos os Municípios" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium" autocomplete="off">
+                <div class="relative group">
+                    <label class="block text-xs font-bold text-slate-700 mb-2 flex items-center justify-between">
+                        <span>Município</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                    </label>
+                    <input type="text" id="filterMunicipio" list="dlMunicipio" placeholder="Todos os Municípios" class="w-full text-xs bg-slate-50/80 hover:bg-white border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium shadow-sm" autocomplete="off">
                     <datalist id="dlMunicipio"></datalist>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">Unidade Escolar</label>
-                    <input type="text" id="filterUnidade" list="dlUnidade" placeholder="Todas as Unidades" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium" autocomplete="off">
+                <div class="relative group">
+                    <label class="block text-xs font-bold text-slate-700 mb-2 flex items-center justify-between">
+                        <span>Unidade Escolar</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                    </label>
+                    <input type="text" id="filterUnidade" list="dlUnidade" placeholder="Todas as Unidades" class="w-full text-xs bg-slate-50/80 hover:bg-white border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium shadow-sm" autocomplete="off">
                     <datalist id="dlUnidade"></datalist>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">Cargo / Função</label>
-                    <input type="text" id="filterCargo" list="dlCargo" placeholder="Todos os Cargos" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium" autocomplete="off">
+                <div class="relative group">
+                    <label class="block text-xs font-bold text-slate-700 mb-2 flex items-center justify-between">
+                        <span>Cargo / Função</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                    </label>
+                    <input type="text" id="filterCargo" list="dlCargo" placeholder="Todos os Cargos" class="w-full text-xs bg-slate-50/80 hover:bg-white border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium shadow-sm" autocomplete="off">
                     <datalist id="dlCargo"></datalist>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">Modalidade</label>
-                    <input type="text" id="filterModalidade" list="dlModalidade" placeholder="Todas as Modalidades" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium" autocomplete="off">
+                <div class="relative group">
+                    <label class="block text-xs font-bold text-slate-700 mb-2 flex items-center justify-between">
+                        <span>Modalidade</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                    </label>
+                    <input type="text" id="filterModalidade" list="dlModalidade" placeholder="Todas as Modalidades" class="w-full text-xs bg-slate-50/80 hover:bg-white border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium shadow-sm" autocomplete="off">
                     <datalist id="dlModalidade"></datalist>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">Situação de Folha</label>
-                    <input type="text" id="filterFolha" list="dlFolha" placeholder="Todas as Situações" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium" autocomplete="off">
+                <div class="relative group">
+                    <label class="block text-xs font-bold text-slate-700 mb-2 flex items-center justify-between">
+                        <span>Situação de Folha</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+                    </label>
+                    <input type="text" id="filterFolha" list="dlFolha" placeholder="Todas as Situações" class="w-full text-xs bg-slate-50/80 hover:bg-white border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium shadow-sm" autocomplete="off">
                     <datalist id="dlFolha"></datalist>
                 </div>
 
@@ -682,7 +700,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Lógica de Filtros cruzados em cascata bidirecional com opção em branco (limpeza)
+// Lógica de Filtros cruzados em cascata bidirecional com opção em branco (limpeza rápida por campo)
 function updateFilterOptions() {
     const nteVal = document.getElementById('filterNTE').value.trim();
     const munVal = document.getElementById('filterMunicipio').value.trim();
@@ -702,7 +720,7 @@ function updateFilterOptions() {
         });
     };
 
-    // Adiciona uma opção em branco (value="") no início de cada datalist para permitir limpar a seleção facilmente
+    // Adiciona opção em branco (value="") no topo permitindo limpar o campo individualmente ao abrir/clicar no input
     const ntes = [...new Set(getFilteredForField('NTE').map(i => i['NTE']).filter(v => v && v !== '-'))].sort();
     document.getElementById('dlNTE').innerHTML = `<option value="">` + ntes.map(v => `<option value="${v}">`).join('');
 
@@ -724,9 +742,14 @@ function updateFilterOptions() {
 
 // Eventos de alteração/digitação nos inputs
 ['filterNTE', 'filterMunicipio', 'filterUnidade', 'filterCargo', 'filterModalidade', 'filterFolha'].forEach(id => {
-    document.getElementById(id).addEventListener('input', () => {
+    const inputEl = document.getElementById(id);
+    inputEl.addEventListener('input', () => {
         updateFilterOptions();
         applyFilters();
+    });
+    // Ao focar, garante que a lista reflita as opções disponíveis com o espaço em branco no topo
+    inputEl.addEventListener('focus', () => {
+        updateFilterOptions();
     });
 });
 
@@ -741,11 +764,10 @@ document.getElementById('btnClearFilters').addEventListener('click', () => {
 
 document.getElementById('btnSearchIndividual').addEventListener('click', executeIndividualSearch);
 
-// Evento ao digitar ou apagar no campo de consulta individual
+// Evento ao digitar ou apagar no campo de consulta individual (recolhe painel automaticamente)
 document.getElementById('searchIndividualInput').addEventListener('input', function(e) {
     const val = this.value.trim();
     if (!val) {
-        // Se apagar todo o texto, recolhe a tela de exibição
         document.getElementById('individualPanel').classList.add('hidden');
         document.getElementById('individualNotFound').classList.add('hidden');
     }
