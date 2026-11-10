@@ -155,7 +155,7 @@
             </div>
         </div>
 
-        <!-- Filtros Globais -->
+        <!-- Filtros Globais (Sem menção de colunas) -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-900 via-red-600 to-yellow-500"></div>
 
@@ -176,7 +176,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">NTE (Coluna A)</label>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">NTE</label>
                     <select id="filterNTE" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
                         <option value="">Todos os NTEs</option>
                     </select>
@@ -190,7 +190,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">Unidade Escolar (Col. E)</label>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">Unidade Escolar</label>
                     <select id="filterUnidade" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
                         <option value="">Todas as Unidades</option>
                     </select>
@@ -211,7 +211,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-2">Situação Escolar</label>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">Situação de Folha</label>
                     <select id="filterFolha" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all font-medium">
                         <option value="">Todas as Situações</option>
                     </select>
@@ -247,13 +247,13 @@
                         <i data-lucide="user-check" class="w-6 h-6 text-blue-900"></i>
                         Nome do Servidor
                     </h3>
-                    <span id="indStatusFolhaBadge" class="px-4 py-1.5 rounded-full text-xs font-bold shadow-sm">Situação Escolar</span>
+                    <span id="indStatusFolhaBadge" class="px-4 py-1.5 rounded-full text-xs font-bold shadow-sm">Situação de Folha</span>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
 
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
-                        <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">NTE (Coluna A)</span>
+                        <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">NTE</span>
                         <span id="indNTE" class="font-extrabold text-blue-950 text-sm">-</span>
                     </div>
 
@@ -263,7 +263,7 @@
                     </div>
 
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 lg:col-span-2">
-                        <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Unidade Escolar (Col. E c/ Cód. D)</span>
+                        <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Unidade Escolar</span>
                         <span id="indUnidade" class="font-extrabold text-blue-950 text-sm leading-tight block">-</span>
                     </div>
 
@@ -364,7 +364,7 @@
                         <tr>
                             <th class="px-4 py-3.5">Matrícula</th>
                             <th class="px-4 py-3.5">Nome do Empregado</th>
-                            <th class="px-4 py-3.5">Situação Escolar</th>
+                            <th class="px-4 py-3.5">Situação de Folha</th>
                             <th class="px-4 py-3.5">Cargo / Função</th>
                             <th class="px-4 py-3.5">Modalidade</th>
                             <th class="px-4 py-3.5">Unidade Escolar</th>
@@ -491,17 +491,20 @@ function cleanAndNormalizeData(jsonRows) {
         const municipio = getVal(['Município', 'Municipio'], 1);
         const codsec = getVal(['Codsec', 'Cod. SEC'], 3);
         const unidadeOrg = getVal(['Unid organizacional', 'UNIDADE ESCOLAR', 'Unidade Organizacional'], 4);
-        const situacaoEscolar = getVal(['SITUAÇÃO ESCOLAR', 'Situação Escolar', 'Situação Folha'], 5);
+        
+        // Mapeia especificamente a Coluna I (index 8) para Situação de Folha
+        const situacaoFolha = getVal(['SITUAÇÃO FOLHA', 'Situação Folha', 'Situacao Folha', 'SITUAÇÃO ESCOLAR'], 8);
+        
         const numPessoal = getVal(['Nº pessoal', 'Matrícula', 'N_ pessoal'], 6);
         const nomeEmpregado = getVal(['Nome do empregado', 'Nome'], 7);
-        const admissao = getVal(['ADMISSÃO', 'Admissão', 'Admissao'], 8);
-        const fimContrato = getVal(['Fim contrato', 'Fim Contrato'], 9);
-        const cpf = getVal(['CPF'], 10);
-        const telefone = getVal(['TELEFONE', 'Telefone'], 11);
-        const celular = getVal(['CELULAR', 'Celular'], 12);
-        const email = getVal(['EMAIL', 'E-mail', 'Email'], 13);
-        const cargo = getVal(['Cargo', 'CARGO'], 14);
-        const modalidade = getVal(['Modalidade', 'MODALIDADE'], 15);
+        const admissao = getVal(['ADMISSÃO', 'Admissão', 'Admissao'], 9);
+        const fimContrato = getVal(['Fim contrato', 'Fim Contrato'], 10);
+        const cpf = getVal(['CPF'], 11);
+        const telefone = getVal(['TELEFONE', 'Telefone'], 12);
+        const celular = getVal(['CELULAR', 'Celular'], 13);
+        const email = getVal(['EMAIL', 'E-mail', 'Email'], 14);
+        const cargo = getVal(['Cargo', 'CARGO'], 15);
+        const modalidade = getVal(['Modalidade', 'MODALIDADE'], 16);
 
         let unidadeCompleta = unidadeOrg || '-';
         if (codsec && codsec !== 'nan' && codsec !== '-') {
@@ -512,7 +515,7 @@ function cleanAndNormalizeData(jsonRows) {
             'NTE': nte || '-',
             'Município': municipio || '-',
             'Unid organizacional': unidadeCompleta,
-            'SITUAÇÃO ESCOLAR': situacaoEscolar || '-',
+            'SITUAÇÃO FOLHA': situacaoFolha || '-',
             'Nº pessoal': numPessoal || '-',
             'Nome do empregado': nomeEmpregado || '-',
             'ADMISSÃO': admissao || '-',
@@ -738,7 +741,7 @@ function populateFilters() {
 
     let dataForFolha = dataForMod;
     if (selectedMod) dataForFolha = dataForMod.filter(item => item['Modalidade'] === selectedMod);
-    const folhas = [...new Set(dataForFolha.map(item => item['SITUAÇÃO ESCOLAR']).filter(v => v && v !== '-'))].sort();
+    const folhas = [...new Set(dataForFolha.map(item => item['SITUAÇÃO FOLHA']).filter(v => v && v !== '-'))].sort();
     fillSelect('filterFolha', folhas, folhas.includes(selectedFolha) ? selectedFolha : "");
 }
 
@@ -824,7 +827,7 @@ function executeIndividualSearch() {
         document.getElementById('indTelefone').innerText = telInfo || '-';
         document.getElementById('indMatricula').innerText = found['Nº pessoal'];
 
-        const sitFolha = found['SITUAÇÃO ESCOLAR'];
+        const sitFolha = found['SITUAÇÃO FOLHA'];
         const badge = document.getElementById('indStatusFolhaBadge');
         badge.innerText = sitFolha;
         const sitUpper = String(sitFolha).toUpperCase();
@@ -855,7 +858,7 @@ function getFilteredData() {
                (!unidVal || item['Unid organizacional'] === unidVal) &&
                (!cargoVal || item['Cargo'] === cargoVal) &&
                (!modVal || item['Modalidade'] === modVal) &&
-               (!folhaVal || item['SITUAÇÃO ESCOLAR'] === folhaVal);
+               (!folhaVal || item['SITUAÇÃO FOLHA'] === folhaVal);
     });
 }
 
@@ -883,7 +886,7 @@ document.getElementById('btnExportExcel').addEventListener('click', () => {
     const exportRows = filteredData.map(item => ({
         'Matrícula': item['Nº pessoal'],
         'Nome do Empregado': item['Nome do empregado'],
-        'Situação Escolar': item['SITUAÇÃO ESCOLAR'],
+        'Situação de Folha': item['SITUAÇÃO FOLHA'],
         'Cargo / Função': item['Cargo'],
         'Modalidade': item['Modalidade'],
         'Unidade Organizacional': item['Unid organizacional'],
@@ -905,7 +908,7 @@ function updateKPIs(data) {
     document.getElementById('kpiTotal').innerText = data.length.toLocaleString('pt-BR');
 
     const emFolhaCount = data.filter(i => {
-        const sit = String(i['SITUAÇÃO ESCOLAR']).toUpperCase();
+        const sit = String(i['SITUAÇÃO FOLHA']).toUpperCase();
         return sit.includes('ATIVO') || sit.includes('SIM') || sit.includes('ATIVIDADE');
     }).length;
     document.getElementById('kpiEmFolha').innerText = emFolhaCount.toLocaleString('pt-BR');
@@ -979,7 +982,7 @@ function renderTable(data) {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50/80 border-b border-slate-100 transition-colors';
 
-        const sit = row['SITUAÇÃO ESCOLAR'];
+        const sit = row['SITUAÇÃO FOLHA'];
         const sitUpper = String(sit).toUpperCase();
         let badge = `<span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg text-[10px] font-semibold">${sit}</span>`;
         if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE')) {
