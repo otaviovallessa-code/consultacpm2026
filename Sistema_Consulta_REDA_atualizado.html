@@ -192,7 +192,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Situação Escolar (Col. I)</label>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Situação Escolar (Col. F)</label>
                     <select id="filterFolha" class="w-full text-xs bg-slate-50 border-slate-300 rounded-lg p-2.5 border focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all">
                         <option value="">Todas as Situações</option>
                     </select>
@@ -345,7 +345,7 @@
                         <tr>
                             <th class="px-4 py-3.5">Matrícula</th>
                             <th class="px-4 py-3.5">Nome do Empregado</th>
-                            <th class="px-4 py-3.5">Situação Escolar (Col. I)</th>
+                            <th class="px-4 py-3.5">Situação Escolar (Col. F)</th>
                             <th class="px-4 py-3.5">Cargo / Função</th>
                             <th class="px-4 py-3.5">Modalidade</th>
                             <th class="px-4 py-3.5">Unidade Escolar (Col. E)</th>
@@ -402,60 +402,53 @@ function sanitizeKeys(obj) {
     return sanitized;
 }
 
-function getRowVal(row, possibleKeys) {
-    for (let k of possibleKeys) {
-        if (row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== '') {
-            return row[k];
-        }
-    }
-    return '';
-}
-
-// Mapeia colunas exatas da nova planilha enxuta
+// Funções de leitura direta das colunas exatas da planilha enxuta
 function getNTE(row) {
     const keys = Object.keys(row);
-    // Coluna A (primeira coluna do Excel)
-    return row[keys[0]] || getRowVal(row, ['NTE', 'NTE (Sede)', 'SEDE']) || '-';
+    // Coluna A (primeira coluna)
+    return row[keys[0]] || row['NTE'] || '-';
 }
 
 function getUnidadeEscolar(row) {
     const keys = Object.keys(row);
     // Coluna E (Unid organizacional - índice 4) e Coluna D (Codsec - índice 3)
-    const desc = row[keys[4]] || getRowVal(row, ['Unid organizacional', 'Unidade Organizacional', 'Unidade Escolar']) || '-';
-    const codsec = row[keys[3]] || getRowVal(row, ['Codsec', 'Cod. SEC']) || '';
+    const desc = row[keys[4]] || row['Unid organizacional'] || '-';
+    const codsec = row[keys[3]] || row['Codsec'] || '';
     
     let info = desc;
-    if (codsec) {
-        info += ` (Cód. SEC: ${codsec})`;
+    if (codsec && String(codsec).trim() !== '') {
+        info += ` (Codsec: ${codsec})`;
     }
     return info;
 }
 
 function getSituacaoFolha(row) {
     const keys = Object.keys(row);
-    // Coluna I (SITUAÇÃO ESCOLAR - índice 8 ou similar baseado na planilha enxuta)
-    return row[keys[8]] || getRowVal(row, ['SITUAÇÃO ESCOLAR', 'Situação Escolar', 'Situação Folha', 'SITUAÇÃO FOLHA']) || '-';
+    // Coluna F (SITUAÇÃO ESCOLAR - índice 5)
+    return row[keys[5]] || row['SITUAÇÃO ESCOLAR'] || '-';
 }
 
 function getAdmissaoVal(row) {
-    return getRowVal(row, ['ADMISSÃO', 'Admissão', 'Admissao', 'ADMISSAO', 'Data Admissão', 'Início contrato']);
+    const keys = Object.keys(row);
+    return row[keys[8]] || row['ADMISSÃO'] || '';
 }
 
 function getFimContratoVal(row) {
-    return getRowVal(row, ['Fim contrato', 'Fim Contrato', 'FIM CONTRATO']);
+    const keys = Object.keys(row);
+    return row[keys[9]] || row['Fim contrato'] || '';
 }
 
 function getTelefones(row) {
-    const tel = getRowVal(row, ['TELEFONE', 'Telefone']);
-    const cel = getRowVal(row, ['CELULAR', 'Celular']);
-    const email = getRowVal(row, ['EMAIL', 'E-mail', 'Email']);
+    const tel = row['TELEFONE'] || '';
+    const cel = row['CELULAR'] || '';
+    const email = row['EMAIL'] || '';
     
     const arrayInfo = [tel, cel, email].filter(Boolean);
     return arrayInfo.length > 0 ? arrayInfo.join(' | ') : '-';
 }
 
 function getModalidade(row) {
-    return getRowVal(row, ['Modalidade', 'MODALIDADE', 'Modalidade Ensino']) || '-';
+    return row['Modalidade'] || '-';
 }
 
 function formatDateBR(val) {
@@ -628,8 +621,8 @@ function populateFilters() {
     fillSelect('filterCargo', cargos, cargos.includes(selectedCargo) ? selectedCargo : "");
 
     let dataForMod = dataForCargo;
-    if (selectedCargo) {
-        dataForMod = dataForCargo.filter(item => item['Cargo'] === selectedCargo);
+    if (selectedUnid) {
+        dataForMod = dataForCargo.filter(item => getUnidadeEscolar(item) === selectedUnid);
     }
     const modalidades = [...new Set(dataForMod.map(item => getModalidade(item)).filter(v => v !== '-'))].sort();
     fillSelect('filterModalidade', modalidades, modalidades.includes(selectedMod) ? selectedMod : "");
