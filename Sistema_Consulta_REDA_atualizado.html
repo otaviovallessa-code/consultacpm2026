@@ -107,7 +107,7 @@
 
             <div class="bg-white p-5 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-emerald-600 flex items-center justify-between">
                 <div>
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Em Folha</p>
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Em Atividade</p>
                     <h3 id="kpiEmFolha" class="text-3xl font-black text-emerald-700 mt-1">0</h3>
                 </div>
                 <div class="p-3.5 bg-emerald-50 text-emerald-700 rounded-xl">
@@ -192,7 +192,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Situação da Folha</label>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Situação Escolar</label>
                     <select id="filterFolha" class="w-full text-xs bg-slate-50 border-slate-300 rounded-lg p-2.5 border focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all">
                         <option value="">Todas as Situações</option>
                     </select>
@@ -228,7 +228,7 @@
                         <i data-lucide="user-check" class="w-5 h-5 text-blue-900"></i>
                         Nome do Servidor
                     </h3>
-                    <span id="indStatusFolhaBadge" class="px-3 py-1 rounded-full text-xs font-bold shadow-sm">Situação Folha</span>
+                    <span id="indStatusFolhaBadge" class="px-3 py-1 rounded-full text-xs font-bold shadow-sm">Situação Escolar</span>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
@@ -244,7 +244,7 @@
                     </div>
 
                     <div class="bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/70 lg:col-span-2">
-                        <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Unidade Escolar (com Códigos)</span>
+                        <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Unidade Organizacional (c/ Cód. UO/SEC)</span>
                         <span id="indUnidade" class="font-extrabold text-blue-950 text-sm leading-tight block">-</span>
                     </div>
 
@@ -274,8 +274,8 @@
                     </div>
 
                     <div class="bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/70">
-                        <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Telefone(s)</span>
-                        <span id="indTelefone" class="font-mono font-bold text-slate-800 text-sm">-</span>
+                        <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Contatos (Tel / Cel / E-mail)</span>
+                        <span id="indTelefone" class="font-mono font-bold text-slate-800 text-xs">-</span>
                     </div>
 
                     <div class="bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/70">
@@ -345,7 +345,7 @@
                         <tr>
                             <th class="px-4 py-3.5">Matrícula</th>
                             <th class="px-4 py-3.5">Nome do Empregado</th>
-                            <th class="px-4 py-3.5">Situação Folha</th>
+                            <th class="px-4 py-3.5">Situação Escolar</th>
                             <th class="px-4 py-3.5">Cargo / Função</th>
                             <th class="px-4 py-3.5">Modalidade</th>
                             <th class="px-4 py-3.5">Unidade Organizacional</th>
@@ -395,7 +395,6 @@ function sanitizeKeys(obj) {
 
     const sanitized = {};
     Object.keys(obj).forEach(key => {
-        // Substitui todos os caracteres proibidos pelo Firebase: . # $ / [ ]
         const cleanKey = key.replace(/[.#$\[\]/]/g, '_').trim();
         sanitized[cleanKey] = sanitizeKeys(obj[key]);
     });
@@ -413,38 +412,40 @@ function getRowVal(row, possibleKeys) {
 }
 
 function getSituacaoFolha(row) {
-    return getRowVal(row, ['Situação Folha', 'Situação folha', 'SITUAÇÃO FOLHA', 'n', 'N', '__EMPTY_13']) || '-';
+    return getRowVal(row, ['SITUAÇÃO ESCOLAR', 'Situação Escolar', 'Situação Folha', 'SITUAÇÃO FOLHA']) || '-';
 }
 
 function getAdmissaoVal(row) {
-    return getRowVal(row, [
-        'ADMISSÃO', 'Admissão', 'Admissao', 'ADMISSAO',
-        'Data Admissão', 'Início contrato', 'Data Início',
-        'v', 'V', '__EMPTY_21', 'u', 'U', '__EMPTY_20'
-    ]);
+    return getRowVal(row, ['ADMISSÃO', 'Admissão', 'Admissao', 'ADMISSAO', 'Data Admissão', 'Início contrato']);
 }
 
 function getFimContratoVal(row) {
-    return getRowVal(row, ['Fim contrato', 'Fim Contrato', 'FIM CONTRATO', 'f', 'F', '__EMPTY_21']);
+    return getRowVal(row, ['Fim contrato', 'Fim Contrato', 'FIM CONTRATO']);
 }
 
 function getTelefones(row) {
-    const telY = getRowVal(row, ['Telefone', 'Telefone 1', 'TELEFONE', 'y', 'Y', '__EMPTY_24']);
-    const telZ = getRowVal(row, ['Celular', 'Telefone 2', 'CELULAR', 'z', 'Z', '__EMPTY_25']);
-    const arrayTels = [telY, telZ].filter(Boolean);
-    return arrayTels.length > 0 ? arrayTels.join(' / ') : '-';
+    const tel = getRowVal(row, ['TELEFONE', 'Telefone']);
+    const cel = getRowVal(row, ['CELULAR', 'Celular']);
+    const email = getRowVal(row, ['EMAIL', 'E-mail', 'Email']);
+    
+    const arrayInfo = [tel, cel, email].filter(Boolean);
+    return arrayInfo.length > 0 ? arrayInfo.join(' | ') : '-';
 }
 
 function getModalidade(row) {
-    return getRowVal(row, ['Modalidade', 'MODALIDADE', 'af', 'AF', '__EMPTY_31', 'Modalidade Ensino']) || '-';
+    return getRowVal(row, ['Modalidade', 'MODALIDADE', 'Modalidade Ensino']) || '-';
 }
 
 function getUnidadeEscolar(row) {
-    const val = getRowVal(row, [
-        'Desc_Unid_organizacional', 'Desc.Unid.organizacional', 'Unidade Organizacional', 'Unidade Escolar', 'ESCOLA',
-        'e', 'E', '__EMPTY_4', 'f', 'F', '__EMPTY_5', 'g', 'G', '__EMPTY_6'
-    ]);
-    return val || '-';
+    const desc = getRowVal(row, ['Unid organizacional', 'Unidade Organizacional', 'Unidade Escolar', 'ESCOLA']);
+    const coduo = getRowVal(row, ['Coduo']);
+    const codsec = getRowVal(row, ['Codsec']);
+    
+    let info = desc;
+    if (coduo || codsec) {
+        info += ` (UO: ${coduo || '-'} | SEC: ${codsec || '-'})`;
+    }
+    return info || '-';
 }
 
 function formatDateBR(val) {
@@ -516,7 +517,6 @@ document.getElementById('excelFile').addEventListener('change', function(e) {
                 dateNF: 'dd/mm/yyyy'
             });
 
-            // Aplica a sanitização completa em todas as chaves
             rawData = sanitizeKeys(tempRawData);
 
             const now = new Date();
@@ -593,12 +593,12 @@ function populateFilters() {
     const selectedMod = modSelect.value;
     const selectedFolha = folhaSelect.value;
 
-    const ntes = [...new Set(rawData.map(item => item['SEDE']).filter(Boolean))].sort();
+    const ntes = [...new Set(rawData.map(item => item['NTE']).filter(Boolean))].sort();
     fillSelect('filterNTE', ntes, selectedNTE);
 
     let dataForMun = rawData;
     if (selectedNTE) {
-        dataForMun = rawData.filter(item => item['SEDE'] === selectedNTE);
+        dataForMun = rawData.filter(item => item['NTE'] === selectedNTE);
     }
     const municipios = [...new Set(dataForMun.map(item => item['Município']).filter(Boolean))].sort();
     fillSelect('filterMunicipio', municipios, municipios.includes(selectedMun) ? selectedMun : "");
@@ -737,7 +737,7 @@ function executeIndividualSearch() {
         document.getElementById('indNomeServidor').innerHTML =
             `<i data-lucide="user-check" class="w-5 h-5 text-blue-900"></i> ${found['Nome do empregado'] || 'Não Informado'}`;
 
-        document.getElementById('indNTE').innerText = found['SEDE'] || '-';
+        document.getElementById('indNTE').innerText = found['NTE'] || '-';
         document.getElementById('indMunicipio').innerText = found['Município'] || '-';
         document.getElementById('indUnidade').innerText = getUnidadeEscolar(found);
         document.getElementById('indCargo').innerText = found['Cargo'] || '-';
@@ -757,7 +757,7 @@ function executeIndividualSearch() {
 
         const sitUpper = String(sitFolha).toUpperCase();
 
-        if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('EM FOLHA')) {
+        if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE')) {
             badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
         } else {
             badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-300";
@@ -781,7 +781,7 @@ function getFilteredData() {
     const folhaVal = document.getElementById('filterFolha').value;
 
     return rawData.filter(item => {
-        const matchNTE = !nteVal || item['SEDE'] === nteVal;
+        const matchNTE = !nteVal || item['NTE'] === nteVal;
         const matchMun = !munVal || item['Município'] === munVal;
         const matchUnid = !unidVal || getUnidadeEscolar(item) === unidVal;
         const matchCargo = !cargoVal || item['Cargo'] === cargoVal;
@@ -828,16 +828,16 @@ document.getElementById('btnExportExcel').addEventListener('click', () => {
     const exportRows = filteredData.map(item => ({
         'Matrícula': item['Nº pessoal'] || '-',
         'Nome do Empregado': item['Nome do empregado'] || '-',
-        'Situação Folha': getSituacaoFolha(item),
+        'Situação Escolar': getSituacaoFolha(item),
         'Cargo / Função': item['Cargo'] || '-',
         'Modalidade': getModalidade(item),
         'Unidade Organizacional': getUnidadeEscolar(item),
         'Município': item['Município'] || '-',
-        'NTE': item['SEDE'] || '-',
+        'NTE': item['NTE'] || '-',
         'Admissão': formatDateBR(getAdmissaoVal(item)),
         'Fim do Contrato': formatDateBR(getFimContratoVal(item)),
         'CPF': item['CPF'] || '-',
-        'Telefone': getTelefones(item)
+        'Contatos': getTelefones(item)
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportRows);
@@ -852,7 +852,7 @@ function updateKPIs(data) {
 
     const emFolhaCount = data.filter(i => {
         const sit = String(getSituacaoFolha(i)).toUpperCase();
-        return sit.includes('ATIVO') || sit.includes('SIM') || sit.includes('EM FOLHA');
+        return sit.includes('ATIVO') || sit.includes('SIM') || sit.includes('ATIVIDADE');
     }).length;
 
     document.getElementById('kpiEmFolha').innerText = emFolhaCount.toLocaleString('pt-BR');
@@ -860,7 +860,7 @@ function updateKPIs(data) {
     const municipios = new Set(data.map(i => i['Município']).filter(Boolean));
     document.getElementById('kpiMunicipios').innerText = municipios.size.toLocaleString('pt-BR');
 
-    const ntes = new Set(data.map(i => i['SEDE']).filter(Boolean));
+    const ntes = new Set(data.map(i => i['NTE']).filter(Boolean));
     document.getElementById('kpiNte').innerText = ntes.size.toLocaleString('pt-BR');
 }
 
@@ -926,7 +926,7 @@ function renderCharts(data) {
     const nteCounts = {};
 
     data.forEach(i => {
-        const nte = i['SEDE'] || 'Não Informado';
+        const nte = i['NTE'] || 'Não Informado';
         nteCounts[nte] = (nteCounts[nte] || 0) + 1;
     });
 
@@ -992,7 +992,7 @@ function renderTable(data) {
 
         let badgeFolha = `<span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[10px] font-semibold border border-slate-300">${situacaoFolha}</span>`;
 
-        if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('EM FOLHA')) {
+        if (sitUpper.includes('ATIVO') || sitUpper.includes('SIM') || sitUpper.includes('ATIVIDADE')) {
             badgeFolha = `<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded text-[10px] font-bold">${situacaoFolha}</span>`;
         } else if (sitUpper.includes('INATIVO') || sitUpper.includes('EXCLUIDO') || sitUpper.includes('NAO')) {
             badgeFolha = `<span class="bg-red-100 text-red-800 border border-red-300 px-2 py-0.5 rounded text-[10px] font-bold">${situacaoFolha}</span>`;
@@ -1006,7 +1006,7 @@ function renderTable(data) {
             <td class="px-4 py-3"><span class="bg-blue-50 text-blue-900 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-semibold">${getModalidade(row)}</span></td>
             <td class="px-4 py-3">${getUnidadeEscolar(row)}</td>
             <td class="px-4 py-3">${row['Município'] || '-'}</td>
-            <td class="px-4 py-3 font-semibold text-slate-800">${row['SEDE'] || '-'}</td>
+            <td class="px-4 py-3 font-semibold text-slate-800">${row['NTE'] || '-'}</td>
             <td class="px-4 py-3 font-medium text-slate-700">${formatDateBR(getAdmissaoVal(row))}</td>
             <td class="px-4 py-3 font-medium text-red-700">${formatDateBR(getFimContratoVal(row))}</td>
         `;
