@@ -157,7 +157,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5">NTE (Sede)</label>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">NTE (Coluna A)</label>
                     <select id="filterNTE" class="w-full text-xs bg-slate-50 border-slate-300 rounded-lg p-2.5 border focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all">
                         <option value="">Todos os NTEs</option>
                     </select>
@@ -171,7 +171,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Unidade Escolar</label>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Unidade Escolar (Col. E)</label>
                     <select id="filterUnidade" class="w-full text-xs bg-slate-50 border-slate-300 rounded-lg p-2.5 border focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all">
                         <option value="">Todas as Unidades</option>
                     </select>
@@ -192,7 +192,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Situação Escolar</label>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">Situação Escolar (Col. I)</label>
                     <select id="filterFolha" class="w-full text-xs bg-slate-50 border-slate-300 rounded-lg p-2.5 border focus:ring-2 focus:ring-blue-900 focus:bg-white outline-none transition-all">
                         <option value="">Todas as Situações</option>
                     </select>
@@ -234,7 +234,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
 
                     <div class="bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/70">
-                        <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">NTE (Sede)</span>
+                        <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">NTE (Coluna A)</span>
                         <span id="indNTE" class="font-extrabold text-blue-950 text-sm">-</span>
                     </div>
 
@@ -244,7 +244,7 @@
                     </div>
 
                     <div class="bg-slate-50/80 p-3.5 rounded-lg border border-slate-200/70 lg:col-span-2">
-                        <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Unidade Organizacional (c/ Cód. UO/SEC)</span>
+                        <span class="font-bold text-slate-400 block mb-1 uppercase tracking-wider text-[10px]">Unidade Escolar (Col. E c/ Cód. D)</span>
                         <span id="indUnidade" class="font-extrabold text-blue-950 text-sm leading-tight block">-</span>
                     </div>
 
@@ -345,12 +345,12 @@
                         <tr>
                             <th class="px-4 py-3.5">Matrícula</th>
                             <th class="px-4 py-3.5">Nome do Empregado</th>
-                            <th class="px-4 py-3.5">Situação Escolar</th>
+                            <th class="px-4 py-3.5">Situação Escolar (Col. I)</th>
                             <th class="px-4 py-3.5">Cargo / Função</th>
                             <th class="px-4 py-3.5">Modalidade</th>
-                            <th class="px-4 py-3.5">Unidade Organizacional</th>
+                            <th class="px-4 py-3.5">Unidade Escolar (Col. E)</th>
                             <th class="px-4 py-3.5">Município</th>
-                            <th class="px-4 py-3.5">NTE</th>
+                            <th class="px-4 py-3.5">NTE (Col. A)</th>
                             <th class="px-4 py-3.5">Admissão</th>
                             <th class="px-4 py-3.5">Fim do Contrato</th>
                         </tr>
@@ -411,8 +411,30 @@ function getRowVal(row, possibleKeys) {
     return '';
 }
 
+// Mapeia colunas exatas da nova planilha enxuta
+function getNTE(row) {
+    const keys = Object.keys(row);
+    // Coluna A (primeira coluna do Excel)
+    return row[keys[0]] || getRowVal(row, ['NTE', 'NTE (Sede)', 'SEDE']) || '-';
+}
+
+function getUnidadeEscolar(row) {
+    const keys = Object.keys(row);
+    // Coluna E (Unid organizacional - índice 4) e Coluna D (Codsec - índice 3)
+    const desc = row[keys[4]] || getRowVal(row, ['Unid organizacional', 'Unidade Organizacional', 'Unidade Escolar']) || '-';
+    const codsec = row[keys[3]] || getRowVal(row, ['Codsec', 'Cod. SEC']) || '';
+    
+    let info = desc;
+    if (codsec) {
+        info += ` (Cód. SEC: ${codsec})`;
+    }
+    return info;
+}
+
 function getSituacaoFolha(row) {
-    return getRowVal(row, ['SITUAÇÃO ESCOLAR', 'Situação Escolar', 'Situação Folha', 'SITUAÇÃO FOLHA']) || '-';
+    const keys = Object.keys(row);
+    // Coluna I (SITUAÇÃO ESCOLAR - índice 8 ou similar baseado na planilha enxuta)
+    return row[keys[8]] || getRowVal(row, ['SITUAÇÃO ESCOLAR', 'Situação Escolar', 'Situação Folha', 'SITUAÇÃO FOLHA']) || '-';
 }
 
 function getAdmissaoVal(row) {
@@ -434,18 +456,6 @@ function getTelefones(row) {
 
 function getModalidade(row) {
     return getRowVal(row, ['Modalidade', 'MODALIDADE', 'Modalidade Ensino']) || '-';
-}
-
-function getUnidadeEscolar(row) {
-    const desc = getRowVal(row, ['Unid organizacional', 'Unidade Organizacional', 'Unidade Escolar', 'ESCOLA']);
-    const coduo = getRowVal(row, ['Coduo']);
-    const codsec = getRowVal(row, ['Codsec']);
-    
-    let info = desc;
-    if (coduo || codsec) {
-        info += ` (UO: ${coduo || '-'} | SEC: ${codsec || '-'})`;
-    }
-    return info || '-';
 }
 
 function formatDateBR(val) {
@@ -593,12 +603,12 @@ function populateFilters() {
     const selectedMod = modSelect.value;
     const selectedFolha = folhaSelect.value;
 
-    const ntes = [...new Set(rawData.map(item => item['NTE']).filter(Boolean))].sort();
+    const ntes = [...new Set(rawData.map(item => getNTE(item)).filter(Boolean))].sort();
     fillSelect('filterNTE', ntes, selectedNTE);
 
     let dataForMun = rawData;
     if (selectedNTE) {
-        dataForMun = rawData.filter(item => item['NTE'] === selectedNTE);
+        dataForMun = rawData.filter(item => getNTE(item) === selectedNTE);
     }
     const municipios = [...new Set(dataForMun.map(item => item['Município']).filter(Boolean))].sort();
     fillSelect('filterMunicipio', municipios, municipios.includes(selectedMun) ? selectedMun : "");
@@ -737,7 +747,7 @@ function executeIndividualSearch() {
         document.getElementById('indNomeServidor').innerHTML =
             `<i data-lucide="user-check" class="w-5 h-5 text-blue-900"></i> ${found['Nome do empregado'] || 'Não Informado'}`;
 
-        document.getElementById('indNTE').innerText = found['NTE'] || '-';
+        document.getElementById('indNTE').innerText = getNTE(found);
         document.getElementById('indMunicipio').innerText = found['Município'] || '-';
         document.getElementById('indUnidade').innerText = getUnidadeEscolar(found);
         document.getElementById('indCargo').innerText = found['Cargo'] || '-';
@@ -781,7 +791,7 @@ function getFilteredData() {
     const folhaVal = document.getElementById('filterFolha').value;
 
     return rawData.filter(item => {
-        const matchNTE = !nteVal || item['NTE'] === nteVal;
+        const matchNTE = !nteVal || getNTE(item) === nteVal;
         const matchMun = !munVal || item['Município'] === munVal;
         const matchUnid = !unidVal || getUnidadeEscolar(item) === unidVal;
         const matchCargo = !cargoVal || item['Cargo'] === cargoVal;
@@ -833,7 +843,7 @@ document.getElementById('btnExportExcel').addEventListener('click', () => {
         'Modalidade': getModalidade(item),
         'Unidade Organizacional': getUnidadeEscolar(item),
         'Município': item['Município'] || '-',
-        'NTE': item['NTE'] || '-',
+        'NTE': getNTE(item),
         'Admissão': formatDateBR(getAdmissaoVal(item)),
         'Fim do Contrato': formatDateBR(getFimContratoVal(item)),
         'CPF': item['CPF'] || '-',
@@ -860,7 +870,7 @@ function updateKPIs(data) {
     const municipios = new Set(data.map(i => i['Município']).filter(Boolean));
     document.getElementById('kpiMunicipios').innerText = municipios.size.toLocaleString('pt-BR');
 
-    const ntes = new Set(data.map(i => i['NTE']).filter(Boolean));
+    const ntes = new Set(data.map(i => getNTE(i)).filter(Boolean));
     document.getElementById('kpiNte').innerText = ntes.size.toLocaleString('pt-BR');
 }
 
@@ -926,7 +936,7 @@ function renderCharts(data) {
     const nteCounts = {};
 
     data.forEach(i => {
-        const nte = i['NTE'] || 'Não Informado';
+        const nte = getNTE(i);
         nteCounts[nte] = (nteCounts[nte] || 0) + 1;
     });
 
@@ -1006,7 +1016,7 @@ function renderTable(data) {
             <td class="px-4 py-3"><span class="bg-blue-50 text-blue-900 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-semibold">${getModalidade(row)}</span></td>
             <td class="px-4 py-3">${getUnidadeEscolar(row)}</td>
             <td class="px-4 py-3">${row['Município'] || '-'}</td>
-            <td class="px-4 py-3 font-semibold text-slate-800">${row['NTE'] || '-'}</td>
+            <td class="px-4 py-3 font-semibold text-slate-800">${getNTE(row)}</td>
             <td class="px-4 py-3 font-medium text-slate-700">${formatDateBR(getAdmissaoVal(row))}</td>
             <td class="px-4 py-3 font-medium text-red-700">${formatDateBR(getFimContratoVal(row))}</td>
         `;
