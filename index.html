@@ -682,7 +682,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Lógica de Filtros cruzados em cascata bidirecional
+// Lógica de Filtros cruzados em cascata bidirecional com opção em branco (limpeza)
 function updateFilterOptions() {
     const nteVal = document.getElementById('filterNTE').value.trim();
     const munVal = document.getElementById('filterMunicipio').value.trim();
@@ -702,23 +702,24 @@ function updateFilterOptions() {
         });
     };
 
+    // Adiciona uma opção em branco (value="") no início de cada datalist para permitir limpar a seleção facilmente
     const ntes = [...new Set(getFilteredForField('NTE').map(i => i['NTE']).filter(v => v && v !== '-'))].sort();
-    document.getElementById('dlNTE').innerHTML = ntes.map(v => `<option value="${v}">`).join('');
+    document.getElementById('dlNTE').innerHTML = `<option value="">` + ntes.map(v => `<option value="${v}">`).join('');
 
     const municipios = [...new Set(getFilteredForField('Município').map(i => i['Município']).filter(v => v && v !== '-'))].sort();
-    document.getElementById('dlMunicipio').innerHTML = municipios.map(v => `<option value="${v}">`).join('');
+    document.getElementById('dlMunicipio').innerHTML = `<option value="">` + municipios.map(v => `<option value="${v}">`).join('');
 
     const unidades = [...new Set(getFilteredForField('Unid organizacional').map(i => i['Unid organizacional']).filter(v => v && v !== '-'))].sort();
-    document.getElementById('dlUnidade').innerHTML = unidades.map(v => `<option value="${v}">`).join('');
+    document.getElementById('dlUnidade').innerHTML = `<option value="">` + unidades.map(v => `<option value="${v}">`).join('');
 
     const cargos = [...new Set(getFilteredForField('Cargo').map(i => i['Cargo']).filter(v => v && v !== '-'))].sort();
-    document.getElementById('dlCargo').innerHTML = cargos.map(v => `<option value="${v}">`).join('');
+    document.getElementById('dlCargo').innerHTML = `<option value="">` + cargos.map(v => `<option value="${v}">`).join('');
 
     const modalidades = [...new Set(getFilteredForField('Modalidade').map(i => i['Modalidade']).filter(v => v && v !== '-'))].sort();
-    document.getElementById('dlModalidade').innerHTML = modalidades.map(v => `<option value="${v}">`).join('');
+    document.getElementById('dlModalidade').innerHTML = `<option value="">` + modalidades.map(v => `<option value="${v}">`).join('');
 
     const folhas = [...new Set(getFilteredForField('SITUAÇÃO FOLHA').map(i => i['SITUAÇÃO FOLHA']).filter(v => v && v !== '-'))].sort();
-    document.getElementById('dlFolha').innerHTML = folhas.map(v => `<option value="${v}">`).join('');
+    document.getElementById('dlFolha').innerHTML = `<option value="">` + folhas.map(v => `<option value="${v}">`).join('');
 }
 
 // Eventos de alteração/digitação nos inputs
